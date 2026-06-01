@@ -1,0 +1,1495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>APEX DAD</title>
+<style>
+/* Fonts load from CDN when online */
+</style>
+<style>
+:root {
+  --bg:#070809;--s1:#0d1014;--s2:#131820;--s3:#1a2230;
+  --border:#1e2d3a;--borderhi:#2a4050;
+  --text:#eaf0f8;--muted:#4a6070;--dim:#151f28;
+  --canyon:#e05a1a;--canyonL:#ff7535;--canyonD:#7a2e08;
+  --gold:#c89020;--goldL:#f0b030;
+  --sage:#2a8050;--sageL:#3ab868;
+  --sky:#1a6ab8;--skyL:#3a98ee;
+  --violet:#5a3a98;--violetL:#8858e0;
+  --red:#c03030;--redL:#e05050;
+  --green:#20a050;--greenL:#35d068;
+  --yellow:#c8a020;--yellowL:#f0c030;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans','SF Pro Display',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;overflow:hidden;}
+#app{display:flex;flex-direction:column;height:100vh;height:100dvh;max-width:480px;margin:0 auto;position:relative;}
+
+/* MOTIVATIONAL OVERLAY */
+#moto-overlay{position:fixed;inset:0;background:rgba(7,8,9,0.97);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 28px;text-align:center;}
+#moto-date{font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:9px;letter-spacing:0.3em;color:var(--canyonD);margin-bottom:20px;text-transform:uppercase;}
+#moto-icon{font-size:48px;margin-bottom:20px;animation:pulse 2s ease infinite;}
+@keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.08);}}
+#moto-quote{font-family:'Bebas Neue','Arial Narrow','Impact',sans-serif,'Arial Narrow','Impact',sans-serif;font-size:28px;letter-spacing:0.04em;line-height:1.2;color:var(--text);margin-bottom:16px;}
+#moto-quote span{color:var(--canyon);}
+#moto-sub{font-size:13px;color:var(--muted);line-height:1.6;max-width:300px;margin-bottom:28px;}
+#moto-for{font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:10px;color:var(--muted);letter-spacing:0.15em;margin-bottom:28px;}
+#moto-btn{background:var(--canyon);border:none;border-radius:10px;padding:14px 40px;font-family:'Bebas Neue','Arial Narrow','Impact',sans-serif,'Arial Narrow','Impact',sans-serif;font-size:20px;letter-spacing:0.1em;color:#fff;cursor:pointer;width:100%;max-width:300px;}
+
+/* NOTIFICATION BANNER */
+#notif-bar{background:linear-gradient(90deg,var(--canyonD),#1a1010);border-bottom:1px solid var(--canyon)40;padding:8px 16px;display:none;align-items:center;gap:10px;flex-shrink:0;}
+#notif-text{font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:10px;color:var(--canyonL);flex:1;}
+#notif-dismiss{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:0 4px;}
+
+/* HEADER */
+#header{background:linear-gradient(180deg,#0a1520 0%,var(--bg) 100%);padding:48px 18px 12px;border-bottom:1px solid var(--border);flex-shrink:0;}
+#header-top{display:flex;justify-content:space-between;align-items:flex-start;}
+#brand-name{font-family:'Bebas Neue','Arial Narrow','Impact',sans-serif,'Arial Narrow','Impact',sans-serif;font-size:30px;letter-spacing:0.08em;color:var(--text);line-height:1;}
+#brand-name span{color:var(--canyon);}
+#brand-sub{font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:8px;letter-spacing:0.25em;color:var(--canyonD);margin-top:1px;}
+#race-counter{text-align:right;}
+#days-num{font-family:'Bebas Neue','Arial Narrow','Impact',sans-serif,'Arial Narrow','Impact',sans-serif;font-size:34px;color:var(--canyon);line-height:1;}
+#days-lbl{font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:8px;color:var(--muted);letter-spacing:0.12em;}
+#prog-bar{margin-top:10px;height:2px;background:var(--s3);border-radius:2px;overflow:hidden;}
+#prog-fill{height:100%;background:linear-gradient(90deg,var(--sage),var(--canyon));border-radius:2px;transition:width 0.5s;}
+#prog-labels{display:flex;justify-content:space-between;margin-top:3px;font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:8px;color:var(--muted);}
+
+/* CONTENT + NAV */
+#content{flex:1;overflow-y:auto;padding:14px 16px 8px;-webkit-overflow-scrolling:touch;}
+#content::-webkit-scrollbar{display:none;}
+#nav{background:var(--s1);border-top:1px solid var(--border);display:flex;padding:8px 0 18px;flex-shrink:0;position:relative;z-index:5;}
+.nb{flex:1;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 2px;}
+.ni{font-size:20px;line-height:1.2;transition:color 0.15s;}
+.nl{font-size:8px;letter-spacing:0.08em;text-transform:uppercase;transition:color 0.15s;font-style:normal;}
+.nb.active .ni,.nb.active .nl{color:var(--canyon);}
+.nb:not(.active) .ni,.nb:not(.active) .nl{color:var(--muted);}
+
+/* CARDS */
+.card{background:var(--s1);border:1px solid var(--border);border-radius:11px;overflow:hidden;margin-bottom:11px;}
+.cb{padding:12px 15px;}
+.slabel{font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:9px;letter-spacing:0.22em;color:var(--muted);text-transform:uppercase;margin-bottom:11px;}
+
+/* SESSION CARD */
+.sc{border-radius:11px;overflow:hidden;margin-bottom:11px;}
+.sh{padding:13px 15px;}
+.stag{font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:8px;letter-spacing:0.18em;margin-bottom:2px;}
+.stitle{font-family:'Bebas Neue','Arial Narrow','Impact',sans-serif,'Arial Narrow','Impact',sans-serif;font-size:24px;letter-spacing:0.04em;line-height:1;}
+.ssub{font-size:11px;color:rgba(255,255,255,0.55);margin-top:2px;}
+.rbadge{margin-top:7px;padding:5px 9px;border-radius:5px;font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:10px;display:inline-block;}
+.cbtn{margin-top:9px;width:100%;border:none;border-radius:7px;padding:9px;font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:11px;letter-spacing:0.1em;cursor:pointer;transition:all 0.2s;}
+
+/* ACCORDION */
+.abtn{width:100%;background:none;border:none;border-bottom:1px solid var(--border);padding:9px 15px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;transition:all 0.15s;}
+.acont{border-bottom:1px solid var(--border);}
+.exrow{display:grid;grid-template-columns:1fr 38px 58px 1fr;gap:5px;padding:8px 15px;border-bottom:1px solid var(--dim);align-items:start;}
+.exn{font-size:11px;font-weight:600;color:var(--text);line-height:1.3;}
+.exs{font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:12px;}
+.exr{font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:10px;color:var(--goldL);}
+.exnote{font-size:10px;color:var(--muted);font-style:italic;line-height:1.4;}
+.wurow{padding:5px 15px;border-bottom:1px solid var(--dim);font-size:11px;display:flex;gap:9px;}
+.wunum{font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:9px;color:var(--muted);min-width:15px;}
+.exhdr{display:grid;grid-template-columns:1fr 38px 58px 1fr;gap:5px;padding:6px 15px 3px;border-bottom:1px solid var(--dim);}
+.exhdr span{font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:8px;color:var(--muted);letter-spacing:0.12em;}
+
+/* STATS */
+.srow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:11px;}
+.sc2{background:var(--s1);border:1px solid var(--border);border-radius:7px;padding:9px 7px;text-align:center;}
+.slb{font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:7px;color:var(--muted);letter-spacing:0.08em;margin-bottom:2px;}
+.sv{font-family:'Bebas Neue','Arial Narrow','Impact',sans-serif,'Arial Narrow','Impact',sans-serif;font-size:19px;line-height:1;}
+.su{font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:7px;color:var(--muted);margin-top:1px;}
+
+/* WEEK ADJ */
+.wadj{background:var(--s1);border:1px solid var(--border);border-radius:7px;padding:9px 13px;display:flex;align-items:center;gap:11px;margin-bottom:11px;}
+.wadjb{background:var(--s2);border:1px solid var(--border);color:var(--text);width:32px;height:32px;border-radius:5px;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);}
+.wadjc{flex:1;text-align:center;}
+.wadjw{font-family:'Bebas Neue','Arial Narrow','Impact',sans-serif,'Arial Narrow','Impact',sans-serif;font-size:20px;color:var(--canyon);line-height:1;}
+.wadjp{font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:8px;margin-top:1px;}
+
+/* WEEK ROWS */
+.drow{background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:10px 13px;margin-bottom:6px;display:flex;align-items:center;gap:11px;cursor:pointer;}
+.dico{font-size:19px;width:24px;text-align:center;}
+.dnm{font-size:11px;font-weight:700;display:flex;align-items:center;gap:5px;margin-bottom:1px;}
+.dlb{font-size:11px;color:var(--muted);}
+.ddi{font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:9px;color:var(--sageL);margin-top:1px;}
+.dtag{font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:7px;padding:2px 6px;border-radius:3px;}
+.badge{font-size:7px;padding:1px 5px;border-radius:7px;font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;}
+
+/* FORMS */
+.ltabs{display:flex;gap:5px;margin-bottom:13px;flex-wrap:wrap;}
+.ltab{flex:1;border:none;border-radius:5px;padding:7px 3px;font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:8px;letter-spacing:0.05em;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+.fg{margin-bottom:9px;}
+.fl{font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:8px;color:var(--muted);letter-spacing:0.1em;margin-bottom:3px;}
+.fi{background:var(--s2);border:1px solid var(--border);border-radius:5px;color:var(--text);padding:7px 9px;font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:12px;outline:none;width:100%;}
+.fi:focus{border-color:var(--borderhi);}
+.fta{background:var(--s2);border:1px solid var(--border);border-radius:5px;color:var(--text);padding:7px 9px;font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:12px;outline:none;width:100%;resize:none;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;}
+.rrow{display:flex;gap:4px;}
+.rbtn{flex:1;border:none;border-radius:4px;padding:6px 0;font-size:11px;cursor:pointer;transition:all 0.15s;font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;}
+.sbtn{width:100%;border:none;border-radius:7px;padding:11px;font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:11px;font-weight:700;letter-spacing:0.1em;cursor:pointer;transition:all 0.2s;margin-top:3px;}
+.toast{background:rgba(32,160,80,0.18);border:1px solid var(--green);border-radius:7px;padding:7px 13px;text-align:center;font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:10px;color:var(--greenL);margin-bottom:11px;}
+
+/* CHARTS */
+.cc{background:var(--s1);border:1px solid var(--border);border-radius:9px;padding:13px;margin-bottom:11px;}
+.ctitle{font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:9px;letter-spacing:0.13em;margin-bottom:9px;}
+.csvg{width:100%;}
+.cfooter{display:flex;justify-content:space-between;margin-top:4px;font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:8px;color:var(--muted);}
+.pgbar{height:5px;background:var(--s3);border-radius:3px;overflow:hidden;margin-top:5px;}
+.pgfill{height:100%;border-radius:3px;transition:width 0.5s;}
+
+/* BLOOD */
+.mrow{padding:8px 0;border-bottom:1px solid var(--dim);}
+.mtop{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;}
+.mnm{font-size:12px;font-weight:600;}
+.mright{display:flex;gap:5px;align-items:center;}
+.mval{font-family:'Bebas Neue','Arial Narrow','Impact',sans-serif,'Arial Narrow','Impact',sans-serif;font-size:17px;line-height:1;}
+.mtgt{font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:9px;padding:2px 7px;border-radius:3px;}
+.mwhy{font-size:11px;color:var(--muted);}
+.tdot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.bwtabs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:13px;}
+.bwtab{border:none;border-radius:4px;padding:4px 9px;font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:8px;letter-spacing:0.06em;cursor:pointer;transition:all 0.2s;}
+.bwmi{background:var(--s2);border:1px solid var(--border);border-radius:5px;padding:9px 11px;margin-bottom:7px;display:flex;align-items:center;justify-content:space-between;gap:9px;}
+.bwin{background:var(--bg);border:1px solid var(--borderhi);border-radius:4px;color:var(--text);padding:5px 7px;font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:13px;width:75px;text-align:center;outline:none;}
+
+/* INJECTION TRACKER */
+.inj-card{background:var(--s1);border:1px solid var(--border);border-radius:11px;overflow:hidden;margin-bottom:11px;}
+.inj-header{padding:12px 15px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.inj-row{padding:10px 15px;border-bottom:1px solid var(--dim);display:flex;align-items:center;justify-content:space-between;}
+.inj-check{width:28px;height:28px;border-radius:50%;border:2px solid var(--borderhi);background:none;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;}
+.inj-check.done{background:var(--canyon);border-color:var(--canyon);}
+
+/* NUTRITION */
+.mc{background:var(--s1);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:8px;}
+.mh{padding:9px 13px;display:flex;align-items:center;gap:9px;}
+.memo{font-size:17px;}
+.mt{font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:8px;letter-spacing:0.12em;margin-bottom:1px;}
+.mn2{font-size:13px;font-weight:700;}
+.mb{padding:7px 13px;}
+.mi{font-size:11px;padding:3px 0;border-bottom:1px solid var(--dim);display:flex;gap:6px;}
+
+/* PHOTOS */
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:11px;}
+.pitem{border-radius:7px;overflow:hidden;border:1px solid var(--border);}
+.pimg{width:100%;height:125px;object-fit:cover;display:block;}
+.pcap{padding:5px 7px;background:var(--s2);}
+.pwk{font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:9px;color:var(--skyL);}
+.pnt{font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:8px;color:var(--muted);margin-top:1px;}
+
+/* TRAVEL */
+.stabs{display:flex;gap:5px;margin-bottom:13px;}
+.stab{flex:1;border:none;border-radius:6px;padding:7px 3px;font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:7px;font-weight:700;letter-spacing:0.05em;cursor:pointer;transition:all 0.2s;}
+.rrow2{padding:7px 0;border-bottom:1px solid var(--dim);}
+.rt{font-size:12px;font-weight:700;margin-bottom:2px;}
+.rd{font-size:11px;color:var(--muted);line-height:1.5;}
+
+/* RECOVERY */
+.rcday{background:var(--s1);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:8px;}
+.rcdh{padding:9px 13px;display:flex;justify-content:space-between;align-items:center;}
+.rcitem{padding:7px 13px;border-top:1px solid var(--dim);}
+.rcp{font-size:12px;font-weight:600;margin-bottom:2px;}
+.rcn{font-size:10px;color:var(--muted);line-height:1.5;}
+
+/* PROGRAM */
+.ptab-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:13px;}
+.ptab{flex:1;background:var(--s1);border:1px solid var(--border);border-radius:5px;padding:6px 3px;font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:8px;color:var(--muted);cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+.ptab.active{background:var(--canyon);border-color:var(--canyon);color:#fff;}
+.phcard{border-radius:9px;overflow:hidden;margin-bottom:9px;}
+.phhdr{padding:13px 15px;}
+.phnum{font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:9px;letter-spacing:0.18em;margin-bottom:2px;}
+.phname{font-family:'Bebas Neue','Arial Narrow','Impact',sans-serif,'Arial Narrow','Impact',sans-serif;font-size:21px;letter-spacing:0.04em;}
+.phdesc{font-size:11px;margin-top:2px;opacity:0.7;}
+.phbody{background:var(--s1);padding:11px 15px;}
+.runrow{display:grid;grid-template-columns:76px 125px 1fr;gap:9px;padding:8px 0;border-bottom:1px solid var(--dim);align-items:start;}
+.rwk{font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:10px;font-weight:700;}
+.rsess{font-size:12px;font-weight:700;}
+.rdet{font-size:11px;color:var(--muted);line-height:1.5;}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.screen{animation:fadeIn 0.18s ease;}
+.uarea{border:2px dashed var(--borderhi);border-radius:9px;padding:20px;text-align:center;cursor:pointer;transition:all 0.2s;margin-bottom:11px;}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- MOTIVATIONAL OVERLAY -->
+<div id="moto-overlay">
+  <div id="moto-date"></div>
+  <div id="moto-icon">🔥</div>
+  <div id="moto-quote"></div>
+  <div id="moto-sub"></div>
+  <div id="moto-for">For <span style="color:var(--canyon);">your daughter</span> · <span style="color:var(--canyon);">your wife</span> · <span style="color:var(--canyon);">yourself</span></div>
+  <button id="moto-btn" onclick="dismissMoto()">LETS GO →</button>
+</div>
+
+<!-- NOTIFICATION BANNER -->
+<div id="notif-bar">
+  <span id="notif-text"></span>
+  <button id="notif-dismiss" onclick="dismissNotif()">✕</button>
+</div>
+
+<!-- HEADER -->
+<div id="header">
+  <div id="header-top">
+    <div>
+      <div id="brand-name">APEX<span>DAD</span></div>
+      <div id="brand-sub">Ultimate Human · Est. 2026</div>
+    </div>
+    <div id="race-counter">
+      <div id="days-lbl">RACE IN</div>
+      <div id="days-num">--</div>
+      <div id="days-lbl">DAYS</div>
+    </div>
+  </div>
+  <div id="prog-bar"><div id="prog-fill"></div></div>
+  <div id="prog-labels"><span>WK 1</span><span id="week-phase">--</span><span>RACE</span></div>
+</div>
+
+<div id="content"></div>
+
+<div id="nav">
+  <button class="nb active" data-screen="today" onclick="sw('today')"><span class="ni">🏠</span><span class="nl">Today</span></button>
+  <button class="nb" data-screen="week" onclick="sw('week')"><span class="ni">📅</span><span class="nl">Week</span></button>
+  <button class="nb" data-screen="log" onclick="sw('log')"><span class="ni">➕</span><span class="nl">Log</span></button>
+  <button class="nb" data-screen="progress" onclick="sw('progress')"><span class="ni">📈</span><span class="nl">Progress</span></button>
+  <button class="nb" data-screen="program" onclick="sw('program')"><span class="ni">⚡</span><span class="nl">Program</span></button>
+</div>
+</div>
+
+<script>
+// ─── CONFIG ──────────────────────────────────────────────────────────────────
+const RACE_DATE = new Date('2027-02-27T07:00:00');
+const PROGRAM_START = new Date('2026-06-06');
+const C = {
+  canyon:'#e05a1a',canyonL:'#ff7535',gold:'#c89020',goldL:'#f0b030',
+  sage:'#2a8050',sageL:'#3ab868',sky:'#1a6ab8',skyL:'#3a98ee',
+  violet:'#5a3a98',violetL:'#8858e0',muted:'#4a6070',greenL:'#35d068',
+};
+
+// ─── MOTIVATIONAL MESSAGES ───────────────────────────────────────────────────
+const MOTO = [
+  {icon:'🔥',quote:'Every rep is a <span>promise</span>',sub:'To the little girl who thinks you hung the moon. Show her what a man looks like when he refuses to quit.',},
+  {icon:'🏔',quote:'Zion is <span>waiting</span>',sub:'722 feet of uphill. Your daughter in the stroller. Your wife beside you. Every session today is a mile on that canyon road.',},
+  {icon:'💪',quote:'Your dad was <span>57</span>.',sub:'You are 37. You have time to rewrite the story. The blood work, the training, the discipline — this is you choosing a different ending.',},
+  {icon:'🩸',quote:'You are <span>optimizing</span>',sub:'TRT, bloodwork, carnivore, cold plunge, 6am sessions. Most men your age are declining. You are building.',},
+  {icon:'🏃',quote:'<span>Apex</span> is a daily decision',sub:'Not a destination. Every morning you wake at 5:30, you choose it again. That consistency is the whole game.',},
+  {icon:'❤️',quote:'Heart health is <span>legacy</span>',sub:'Your daughter needs decades of you. Not just today — at her graduation, her wedding, her kids. Train like that future is non-negotiable.',},
+  {icon:'🌅',quote:'The <span>morning</span> belongs to you',sub:'Before the meetings, the flights, the business — this hour is yours. No one can take what you build at 6am.',},
+  {icon:'⚡',quote:'You own <span>Gentry Gym</span>',sub:'The sauna, the turf, the cold plunge — all of it is your arsenal. Most people pay for access. You built it. Use it like you own it.',},
+  {icon:'🦶',quote:'The ankle is <span>healing</span>',sub:'Slowly and deliberately. Every wall drill, every CAR, every careful step is rebuilding what broke. Patience is strength here.',},
+  {icon:'🥩',quote:'Food is <span>medicine</span>',sub:'Ribeye, salmon, liver, berries — you are literally building your cardiovascular system with every meal. Every plate is a choice.',},
+  {icon:'🧊',quote:'Cold is <span>courage</span>',sub:'Every time you step into that cold plunge, you are training your nervous system to face discomfort without flinching. That transfers everywhere.',},
+  {icon:'👨‍👧',quote:'<span>Dad</span> is a verb',sub:'Not a title — an action. Today you go to the gym. You run the miles. You eat clean. You show up. That is what dad means.',},
+  {icon:'📈',quote:'The data <span>doesn\'t lie</span>',sub:'Waist down. Fasting insulin dropping. Weight moving. Every number in that bloodwork panel is proof that what you are doing works.',},
+  {icon:'🌄',quote:'February 27 <span>2027</span>',sub:'Zion Canyon at sunrise. Your daughter laughing in the KidRunner. Your wife\'s hand on your shoulder at the finish line. That day is being built today.',},
+  {icon:'💉',quote:'The protocol is <span>exact</span>',sub:'TRT twice a week. HCG twice a week. Bloodwork every six weeks. Sleep every night. The machine runs when the protocol is followed.',},
+  {icon:'🏋️',quote:'Strength is <span>insurance</span>',sub:'For your heart. For your bones. For the ankles that carry you up canyon roads. Every pound of muscle you build is a policy payment.',},
+  {icon:'☀️',quote:'Morning sun is <span>free</span>',sub:'Five minutes outside before you drive to Gentry. Cortisol reset. Serotonin spike. Circadian anchor. The cheapest performance tool in your stack.',},
+  {icon:'🎯',quote:'28 pounds to <span>200</span>',sub:'Not a number — a version of yourself. Lighter on your feet. Longer wind. A dad who can run and play and be there fully. Chase that version.',},
+  {icon:'💛',quote:'She is <span>watching</span>',sub:'Your daughter is learning what men do. She is watching how you treat your body, your wife, your health. Make it worth watching.',},
+  {icon:'🔬',quote:'You are the <span>experiment</span>',sub:'37 years old. TRT optimized. Carnivore protocol. Training for a half marathon. Visceral fat dropping. This is what peak health looks like when you choose it.',},
+];
+
+// ─── INJECTION SCHEDULE ──────────────────────────────────────────────────────
+const INJECTION_DAYS = [1, 4]; // Monday=1, Thursday=4
+
+// ─── BLOODWORK REMINDERS ─────────────────────────────────────────────────────
+// Every 6 weeks from program start
+function getNextBloodworkDate() {
+  const lastBW = load('lastBloodwork', null);
+  if (!lastBW) {
+    // First one: recommend before Week 1
+    return '2026-06-05';
+  }
+  const last = new Date(lastBW);
+  const next = new Date(last);
+  next.setDate(next.getDate() + 42); // 6 weeks
+  return next.toISOString().split('T')[0];
+}
+
+// ─── DATA ────────────────────────────────────────────────────────────────────
+const WT = [
+  {dow:1,day:'Monday',   label:'Push + Core',         color:C.canyon, icon:'↑',tag:'PUSH',   type:'GYM'},
+  {dow:2,day:'Tuesday',  label:'Easy Run + Mobility',  color:C.sage,   icon:'→',tag:'RUN',    type:'RUN'},
+  {dow:3,day:'Wednesday',label:'Pull + Mobility',      color:C.sky,    icon:'↓',tag:'PULL',   type:'GYM'},
+  {dow:4,day:'Thursday', label:'Hinge + Tempo',        color:C.gold,   icon:'⚡',tag:'HINGE', type:'GYM+RUN'},
+  {dow:5,day:'Friday',   label:'Full Body Power',      color:C.violet, icon:'◎',tag:'POWER',  type:'GYM'},
+  {dow:6,day:'Saturday', label:'Long Run',             color:C.goldL,  icon:'⟶',tag:'LONG',  type:'RUN'},
+  {dow:0,day:'Sunday',   label:'Full Rest',            color:C.muted,  icon:'○',tag:'REST',   type:'REST'},
+];
+
+const PHASES=[
+  {num:1,name:'Base Build',      weeks:[1,8],  color:C.sage,  tag:'Foundation',desc:'Build the engine. Protect the ankle. Learn to run again.'},
+  {num:2,name:'Build & Stroller',weeks:[9,20], color:C.gold,  tag:'Development',desc:'Distance grows. Stroller introduced. Strength and run merge.'},
+  {num:3,name:'Peak & Race-Spec',weeks:[21,32],color:C.canyon,tag:'Peak',       desc:'Race-pace uphill. Body composition peaks. Full simulation.'},
+  {num:4,name:'Taper & Race',    weeks:[33,36],color:C.sky,   tag:'Race',       desc:'Pull back. Trust 32 weeks of work. Cross the finish line.'},
+];
+
+const PHASE_RUNS={
+  1:[{wk:'Wk 1–2',s:'Run/Walk 20 min FLAT',d:'2 min run / 1 min walk. Zero incline. Listen to left ankle.'},
+     {wk:'Wk 3–4',s:'Run/Walk 25 min FLAT',d:'3 min run / 1 min walk. Conversational pace.'},
+     {wk:'Wk 5–6',s:'25–30 min @ 2% incline',d:'First incline introduction. Uphill adaptation begins now.'},
+     {wk:'Wk 7–8',s:'30–35 min @ 2–3%',d:'Saturday 35 min. KidRunner intro Wk 8 — flat 20 min only.'}],
+  2:[{wk:'Wk 9–11',s:'3–4 mi @ 3%',d:'Uphill tempo starts Thursday. KidRunner Saturday.'},
+     {wk:'Wk 12–14',s:'4–5 mi @ 3–4%',d:'Saturday long at 3% with KidRunner.'},
+     {wk:'Wk 15–17',s:'5–7 mi uphill',d:'Saturday 6–7 mi + KidRunner.'},
+     {wk:'Wk 18–20',s:'7–9 mi peak base',d:'Saturday 8–9 mi. Highest volume pre-peak.'}],
+  3:[{wk:'Wk 21–24',s:'8–10 mi @ 4%',d:'Sunday long run. Full duration at 4%.'},
+     {wk:'Wk 25–28',s:'10–11 mi PEAK',d:'Longest training run. Never run 13.1 in training.'},
+     {wk:'Wk 29–30',s:'Hold 9–10 mi',d:'Maintain. Dial nutrition and sleep.'},
+     {wk:'Wk 31–32',s:'Taper: 7–8 mi',d:'Volume drops 20%. Keep incline and intensity.'}],
+  4:[{wk:'Wk 33',s:'6 mi @ 3%',d:'Easy. Short strides at end.'},
+     {wk:'Wk 34',s:'4–5 mi easy',d:'Two runs. No stroller. Protect legs.'},
+     {wk:'Wk 35',s:'3 mi + strides',d:'2 short runs + 6×20 sec pickups.'},
+     {wk:'Wk 36',s:'2 mi Mon · RACE Sun',d:'Rest Tue–Sat. Wake 4am. Shuttle 5:30am. Race 7am.'}],
+};
+
+const SESSIONS={
+  Monday:{
+    warmup:['5 min incline treadmill walk — 2–3% from Wk 5','Ankle CARs — left foot, 5 circles each direction','Thoracic foam roller 60 sec','Band pull-aparts 2×15','Shoulder CARs 5 each arm','Dead bug 2×8 each side','Banded knee drives 3×12 each'],
+    blocks:[
+      {name:'PRIMARY — PUSH',color:C.canyon,exercises:[
+        {ex:'Flat DB Press',sets:'4',reps:'8–10',tempo:'3-1-1',note:'3 sec lower.'},
+        {ex:'Incline DB Press',sets:'3',reps:'10–12',tempo:'2-0-1',note:'30–45°.'},
+        {ex:'Cable Chest Fly',sets:'3',reps:'12–15',tempo:'2-1-2',note:'Squeeze at top.'},
+      ]},
+      {name:'SECONDARY — PULL + SHOULDERS',color:C.sky,exercises:[
+        {ex:'Lat Pulldown (wide)',sets:'3',reps:'10–12',tempo:'2-1-1',note:'Running posture.'},
+        {ex:'Face Pulls (rope)',sets:'3',reps:'15–20',tempo:'1-2-1',note:'Every session.'},
+        {ex:'Lateral Raises',sets:'3',reps:'15',tempo:'1-1-1',note:'Width = smaller waist.'},
+      ]},
+      {name:'HINGE + TRICEPS',color:C.gold,exercises:[
+        {ex:'Romanian Deadlift (DB)',sets:'3',reps:'10',tempo:'3-1-1',note:'Hinge every session.'},
+        {ex:'Tricep Rope Pushdown',sets:'3',reps:'12–15',tempo:'2-1-1',note:''},
+        {ex:'Overhead Tricep Ext',sets:'2',reps:'12',tempo:'2-0-1',note:''},
+      ]},
+      {name:'CORE CIRCUIT',color:C.sage,exercises:[
+        {ex:'Pallof Press',sets:'3',reps:'12 each',tempo:'—',note:'Anti-rotation.'},
+        {ex:'Dead Bug',sets:'3',reps:'10 each',tempo:'—',note:'Deep core.'},
+        {ex:'Cable Hip Flexion',sets:'3',reps:'12 each leg',tempo:'2-1-1',note:'Uphill engine.'},
+      ]},
+    ],
+    cooldown:'5 min walk. Doorway stretch. Left ankle wall drill 2×10.',
+    recovery:'Sauna 15–20 min → Cold Plunge 2–3 min → Sauna 10 min',
+    ankleNote:'All pressing seated or bench-supported.',
+  },
+  Tuesday:{
+    warmup:['Dynamic leg swings 10 each','Hip circles 10 each','Ankle alphabet left 2 rounds','Calf raise eccentrics RIGHT only 2×10','Glute bridge 2×15','2 min walk before run'],
+    blocks:[
+      {name:'EASY RUN — ZONE 2',color:C.sage,exercises:[
+        {ex:'Easy Run',sets:'—',reps:'HR 130–145',tempo:'—',note:'Wk 1–4: flat. Wk 5+: 2–3%.'},
+        {ex:'4× Strides (Wk 9+)',sets:'—',reps:'20s fast/60s walk',tempo:'—',note:'End of run.'},
+      ]},
+      {name:'ANKLE REHAB',color:C.violet,exercises:[
+        {ex:'Wall ankle dorsiflexion',sets:'3',reps:'10 left',tempo:'—',note:'Heel down always.'},
+        {ex:'Single-leg balance (wall)',sets:'3',reps:'20–30 sec',tempo:'—',note:'Goal: 60s unassisted.'},
+        {ex:'Downhill walk -2% (Wk 9+)',sets:'1',reps:'10 min',tempo:'—',note:'Eccentric ankle.'},
+        {ex:'90/90 hip flow',sets:'—',reps:'5 min',tempo:'—',note:''},
+        {ex:'Couch stretch',sets:'—',reps:'60s each',tempo:'—',note:'Uphill hip flexors.'},
+      ]},
+    ],
+    cooldown:'Foam roll calves, quads, IT band. Hamstring stretch 45s each.',
+    recovery:'Cold Plunge 2–3 min → Sauna 15 min',
+    ankleNote:'Stop at left ankle pain. Walk home. Drop back one week.',
+  },
+  Wednesday:{
+    warmup:['10 min rowing machine','Cat-cow 10 reps','Lat stretch in rack 30s each','Ankle CARs left 2 rounds','Thoracic rotation 8 each side'],
+    blocks:[
+      {name:'PRIMARY — PULL',color:C.sky,exercises:[
+        {ex:'Seated Cable Row (close)',sets:'4',reps:'8–10',tempo:'2-1-2',note:'Tall spine.'},
+        {ex:'Lat Pulldown (neutral)',sets:'4',reps:'10–12',tempo:'2-1-1',note:''},
+        {ex:'Single-Arm DB Row',sets:'3',reps:'10 each',tempo:'2-0-1',note:'Full range.'},
+        {ex:'Cable Row (wide)',sets:'3',reps:'12',tempo:'2-1-1',note:'Upper back.'},
+      ]},
+      {name:'SECONDARY — PUSH',color:C.canyon,exercises:[
+        {ex:'DB Floor Press',sets:'3',reps:'10–12',tempo:'2-1-1',note:'Chest 48hrs post-Mon.'},
+        {ex:'Seated DB Shoulder Press',sets:'3',reps:'10–12',tempo:'2-0-1',note:'3× weekly.'},
+      ]},
+      {name:'BICEPS + CALF + CORE',color:C.gold,exercises:[
+        {ex:'Incline DB Curl',sets:'3',reps:'12',tempo:'2-0-1',note:'Full stretch.'},
+        {ex:'Hammer Curl',sets:'2',reps:'12–15',tempo:'2-0-1',note:''},
+        {ex:'Seated Calf Raise (both)',sets:'4',reps:'15–20',tempo:'2-1-3',note:'3 sec hold.'},
+        {ex:'Farmer Carries',sets:'3',reps:'30m',tempo:'—',note:'Core + posture.'},
+        {ex:'Plank',sets:'3',reps:'30–60 sec',tempo:'—',note:'Build to 90s.'},
+      ]},
+    ],
+    cooldown:"Child's pose 60s. Thread-the-needle 30s. Ankle wall drill 2×10.",
+    recovery:'Sauna 15–20 min → Cold Plunge 2–3 min',
+    ankleNote:'All exercises seated or supported.',
+  },
+  Thursday:{
+    warmup:['10 min bike — seated','Banded clam shells 2×15','Glute bridge 2×20','Ankle alphabet left 2 rounds','Hip flexor stretch 45s each','Single-leg RDL BW 5 each'],
+    blocks:[
+      {name:'PRIMARY — HINGE',color:C.gold,exercises:[
+        {ex:'Trap Bar Deadlift',sets:'4',reps:'6–8',tempo:'2-1-1',note:'King movement.'},
+        {ex:'Romanian Deadlift (DB)',sets:'3',reps:'10',tempo:'3-1-1',note:'Hamstring = insurance.'},
+        {ex:'Loaded Glute Bridge',sets:'3',reps:'12–15',tempo:'1-2-1',note:'Hold top 2 sec.'},
+      ]},
+      {name:'LEGS — ANKLE MODIFIED',color:C.violet,exercises:[
+        {ex:'Bulgarian Split Squat',sets:'4',reps:'8–10 each',tempo:'3-1-1',note:'Left: front foot flat.'},
+        {ex:'Leg Press (feet high)',sets:'3',reps:'10–12',tempo:'3-1-1',note:'Glute dominant.'},
+        {ex:'Seated Leg Curl',sets:'3',reps:'12–15',tempo:'2-1-2',note:'Zero ankle.'},
+        {ex:'Hip Abduction Machine',sets:'3',reps:'15–20',tempo:'1-1-1',note:'Left knee stability.'},
+        {ex:'Step-ups (6"→8"→10")',sets:'3',reps:'8 each',tempo:'2-1-1',note:'Left: never through pain.'},
+      ]},
+      {name:'CALF + CORE + TEMPO',color:C.sage,exercises:[
+        {ex:'Standing Calf Raise (RIGHT)',sets:'4',reps:'12–15',tempo:'2-1-3',note:'Left: seated only.'},
+        {ex:'Cable Hip Flexion',sets:'3',reps:'12 each',tempo:'2-1-1',note:'Uphill stride.'},
+        {ex:'Hanging Knee Raise',sets:'4',reps:'15',tempo:'2-1-1',note:'Lower abs.'},
+        {ex:'Ab Wheel Rollout',sets:'3',reps:'8–10',tempo:'3-0-1',note:'Best ab exercise.'},
+        {ex:'TEMPO RUN (Wk 9+)',sets:'—',reps:'20–30 min HR 155–165',tempo:'—',note:'4–5% incline.'},
+      ]},
+    ],
+    cooldown:'Foam roll quads, IT band, glutes. Pigeon pose 60s each.',
+    recovery:'Sauna 15 min → Cold Plunge 2 min',
+    ankleNote:'Bulgarian: front foot flat. No barbell squats.',
+  },
+  Friday:{
+    warmup:['5 min row or bike','Inchworm walks 5 reps','CARs: shoulder + hip + ankle','Lateral lunge 5 each','Fast feet 3×20 sec','Banded knee drives 3×10'],
+    blocks:[
+      {name:'COMPOUND POWER',color:C.violet,exercises:[
+        {ex:'Trap Bar Deadlift (explosive)',sets:'3',reps:'5 — max speed',tempo:'1-0-X',note:'Lighter. Speed focus.'},
+        {ex:'Push Press (seated start)',sets:'3',reps:'8',tempo:'1-0-X',note:'Explosive.'},
+        {ex:'Bent Over DB Row',sets:'3',reps:'10',tempo:'2-1-1',note:'Back 3× this week.'},
+        {ex:'Bulgarian Split Squat (light)',sets:'2',reps:'8 each',tempo:'2-1-1',note:'Second exposure.'},
+        {ex:'DB Walking Lunge (short)',sets:'3',reps:'8 each',tempo:'2-1-1',note:'Left stride shortened.'},
+      ]},
+      {name:'METABOLIC — OUTDOOR TURF',color:C.canyon,exercises:[
+        {ex:'Battle Ropes',sets:'5',reps:'20s on/10s off',tempo:'—',note:'SEATED. Zero ankle.'},
+        {ex:'KB Swing (Russian)',sets:'4',reps:'15',tempo:'—',note:'KidRunner mechanics.'},
+        {ex:'Sled Push (light)',sets:'3',reps:'20m',tempo:'—',note:'Hip drive.'},
+      ]},
+      {name:'SIX PACK FINISHER',color:C.gold,exercises:[
+        {ex:'Cable Crunch (weighted)',sets:'3',reps:'15–20',tempo:'2-1-1',note:'Train abs weighted.'},
+        {ex:'Side Plank',sets:'3',reps:'30–45s each',tempo:'—',note:'Oblique definition.'},
+        {ex:'Pallof Press',sets:'3',reps:'12 each',tempo:'—',note:'Anti-rotation.'},
+        {ex:'Ab Wheel Rollout',sets:'3',reps:'8–10',tempo:'3-0-1',note:'Second weekly.'},
+      ]},
+    ],
+    cooldown:'10 min walk. Full lower stretch. Box breathing 5 min.',
+    recovery:'Sauna 20 min → Cold Plunge 3 min → Sauna 10 min',
+    ankleNote:'Left stride shortened. Sled: hip drive not ankle.',
+  },
+  Saturday:{
+    warmup:['10 min walk before run','Hip swings + leg swings','Ankle mobility left 2 min','Box breathing 2 min'],
+    blocks:[
+      {name:'LONG RUN',color:C.goldL,exercises:[
+        {ex:'Long Run (phase distance)',sets:'—',reps:'Phase plan',tempo:'—',note:'SLOW. 3–4% incline.'},
+        {ex:'KidRunner from Wk 8',sets:'—',reps:'Full run',tempo:'—',note:'Hip harness. Arms free.'},
+      ]},
+      {name:'POST-RUN PRIORITY',color:C.sage,exercises:[
+        {ex:'Foam roll: quads, IT band, glutes',sets:'—',reps:'10 min',tempo:'—',note:''},
+        {ex:'Supine hamstring stretch',sets:'—',reps:'45s each',tempo:'—',note:''},
+        {ex:'Pigeon pose',sets:'—',reps:'60s each',tempo:'—',note:''},
+      ]},
+    ],
+    cooldown:'15 min minimum stretch. No strength work today.',
+    recovery:'Cold Plunge ONLY — 3–5 min. No sauna after long runs.',
+    ankleNote:'Stop at ankle pain. Walk home. Drop back one week.',
+  },
+  Sunday:{
+    warmup:[],
+    blocks:[{name:'FULL REST',color:C.muted,exercises:[
+      {ex:'Zero training. Zero gym. Zero sauna.',sets:'—',reps:'—',tempo:'—',note:'Rest IS the training.'},
+      {ex:'20–30 min gentle walk in sun',sets:'—',reps:'Optional',tempo:'—',note:'Movement + light only.'},
+    ]}],
+    cooldown:'8–9 hrs sleep. In bed by 9pm. 5:30am wake tomorrow.',
+    recovery:'No sauna. No cold plunge. Full rest.',
+    ankleNote:'',
+  },
+};
+
+const MEALS=[
+  {time:'5:30am',label:'Pre-Train',emoji:'☕',color:C.muted,items:['Black coffee + electrolytes','2 Brazil nuts','Eggs only if energy truly low']},
+  {time:'7:15am',label:'Post-Workout',emoji:'🥩',color:C.canyon,items:['4–5 eggs in grass-fed butter','5–7 oz ribeye or ground beef','1 glass whole grass-fed milk','100g wild blueberries','8 oz bone broth + salt']},
+  {time:'12:30pm',label:'Main Meal',emoji:'🍖',color:C.gold,items:['8–10 oz beef / lamb / brisket','½–1 avocado','Large handful arugula or spinach','8 oz bone broth','Optional: 1 oz parmesan']},
+  {time:'6:00pm',label:'Dinner',emoji:'🐟',color:C.sky,items:['Wild salmon 3× weekly — NON-NEGOTIABLE','OR lamb chops / ribeye / brisket','1× weekly: beef liver in dinner','100g berries','1–2 oz dark chocolate 85%+']},
+  {time:'9:00pm',label:'Before Bed',emoji:'🧀',color:C.violet,items:['150–200g full-fat cottage cheese','Small handful berries','Magnesium glycinate 400mg','Long run nights: 1 tbsp raw honey']},
+];
+
+const BLOOD_MARKERS=[
+  {name:'Fasting Insulin',unit:'µIU/mL',target:'< 5',freq:'6 wks',why:'Best visceral fat proxy.',cat:'Metabolic',lo:0,hi:5,dir:'lo'},
+  {name:'ApoB',unit:'mg/dL',target:'< 80',freq:'6 wks',why:'Best cardiac risk on carnivore.',cat:'Cardiac',lo:0,hi:80,dir:'lo'},
+  {name:'Hematocrit',unit:'%',target:'< 52',freq:'6 wks',why:'TRT safety — watch closely.',cat:'Blood',lo:38,hi:52,dir:'range'},
+  {name:'hs-CRP',unit:'mg/L',target:'< 1.0',freq:'6 wks',why:'Inflammation marker.',cat:'Cardiac',lo:0,hi:1,dir:'lo'},
+  {name:'Total Testosterone',unit:'ng/dL',target:'700–1000',freq:'6 wks',why:'TRT optimization.',cat:'Hormonal',lo:700,hi:1000,dir:'range'},
+  {name:'Estradiol (E2)',unit:'pg/mL',target:'20–40',freq:'6 wks',why:'Critical on TRT.',cat:'Hormonal',lo:20,hi:40,dir:'range'},
+  {name:'Triglycerides',unit:'mg/dL',target:'< 100',freq:'6 wks',why:'Visceral fat marker.',cat:'Cardiac',lo:0,hi:100,dir:'lo'},
+  {name:'Free Testosterone',unit:'pg/mL',target:'15–25',freq:'6 wks',why:'Bioavailable T.',cat:'Hormonal',lo:15,hi:25,dir:'range'},
+  {name:'Fasting Glucose',unit:'mg/dL',target:'70–90',freq:'6 wks',why:'Blood sugar baseline.',cat:'Metabolic',lo:70,hi:90,dir:'range'},
+  {name:'HDL Cholesterol',unit:'mg/dL',target:'> 60',freq:'6 wks',why:'Cardiac protection.',cat:'Cardiac',lo:60,hi:999,dir:'hi'},
+  {name:'Vitamin D (25-OH)',unit:'ng/mL',target:'60–80',freq:'12 wks',why:'Cardiac + testosterone.',cat:'Micro',lo:60,hi:80,dir:'range'},
+  {name:'ALT',unit:'U/L',target:'< 40',freq:'6 wks',why:'Liver — carnivore + TRT.',cat:'Blood',lo:0,hi:40,dir:'lo'},
+  {name:'TSH',unit:'mIU/L',target:'0.5–2.0',freq:'12 wks',why:'Thyroid = metabolic rate.',cat:'Hormonal',lo:0.5,hi:2,dir:'range'},
+  {name:'HbA1c',unit:'%',target:'< 5.4',freq:'12 wks',why:'90-day blood sugar.',cat:'Metabolic',lo:0,hi:5.4,dir:'lo'},
+  {name:'Cortisol (AM)',unit:'mcg/dL',target:'10–20',freq:'12 wks',why:'High = visceral fat retention.',cat:'Hormonal',lo:10,hi:20,dir:'range'},
+];
+
+const TRAVEL_SC=[
+  {id:'hotel',name:'A',title:'Hotel Gym',color:'#2a8050',
+   indicator:'Dumbbells, cable machine, treadmill.',
+   sessions:[
+    {day:'Day 1',label:'Push + Core',color:C.canyon,cardio:'20 min treadmill @ 3–4% HR 130–145.',exercises:[
+      {ex:'DB Bench Press',sets:'4',reps:'10–12',note:''},
+      {ex:'DB Shoulder Press',sets:'3',reps:'12',note:''},
+      {ex:'DB Lateral Raises',sets:'3',reps:'15',note:''},
+      {ex:'DB Romanian Deadlift',sets:'3',reps:'12',note:'Hinge every session.'},
+      {ex:'Plank',sets:'3',reps:'45–60 sec',note:''},
+    ]},
+    {day:'Day 2',label:'Pull + Legs',color:C.sky,cardio:'15 min treadmill walk @ 5–6%.',exercises:[
+      {ex:'DB Row (single arm)',sets:'4',reps:'10 each',note:''},
+      {ex:'DB Curl + Hammer Curl',sets:'3',reps:'10+10',note:''},
+      {ex:'Band Face Pull (over door)',sets:'3',reps:'20',note:''},
+      {ex:'DB Romanian Deadlift',sets:'4',reps:'10',note:''},
+      {ex:'DB Bulgarian Split Squat',sets:'3',reps:'8 each',note:'Left ankle maintained.'},
+    ]},
+   ],
+   notes:['Pack resistance bands — carry-on, every trip.','Scout hotel gym before you arrive.','Treadmill at 6%+ = Zion grade simulator.']},
+  {id:'commercial',name:'B',title:'Commercial Gym',color:'#c89020',
+   indicator:'Planet Fitness $15 · CrossFit drop-in ~$20 · YMCA $15–20.',
+   sessions:[
+    {day:'Any day',label:'Normal Split',color:C.gold,cardio:'Treadmill at current week run distance.',exercises:[
+      {ex:'Follow standard week split',sets:'—',reps:'—',note:'Pick up where you are.'},
+      {ex:'Priority if short on time',sets:'—',reps:'—',note:'Trap bar → Rows → Push press → Core.'},
+    ]},
+   ],
+   notes:['Planet Fitness: $15 day pass everywhere.','CrossFit drop-in: ~$20, best equipment.','Google: city + powerlifting gym day pass.']},
+  {id:'remote',name:'C',title:'No Gym',color:'#e05a1a',
+   indicator:'Hotel room only. This is a real training day.',
+   sessions:[
+    {day:'Push',label:'Room Push',color:C.canyon,cardio:'Hotel stairwell: run up, walk down. 10 floors × 5–8 rounds.',exercises:[
+      {ex:'Push-ups: standard → wide → diamond → decline',sets:'4',reps:'Max-2',note:''},
+      {ex:'Pike push-up',sets:'3',reps:'12–15',note:'Targets shoulders.'},
+      {ex:'Tricep dip (chair/bed)',sets:'3',reps:'15',note:''},
+      {ex:'Plank → side plank',sets:'3',reps:'45s each',note:''},
+      {ex:'Dead bug',sets:'3',reps:'10 each',note:'Never skip.'},
+    ]},
+    {day:'Pull',label:'Room Pull',color:C.sky,cardio:'30 min outdoor run from hotel.',exercises:[
+      {ex:'Band row (looped over door)',sets:'4',reps:'12–15',note:'Every hotel has a door.'},
+      {ex:'Band pull-apart',sets:'4',reps:'20',note:'Bring bands — always.'},
+      {ex:'Towel row (under door)',sets:'3',reps:'10',note:'Floor, feet against door.'},
+      {ex:'Band bicep curl',sets:'3',reps:'15',note:''},
+      {ex:'Superman hold',sets:'3',reps:'10 × 3 sec',note:''},
+    ]},
+    {day:'Legs',label:'Room Legs',color:C.gold,cardio:'Stairwell HIIT: 10 floors × 5–8 rounds.',exercises:[
+      {ex:'Single-leg RDL (bodyweight)',sets:'4',reps:'10 each',note:'Ankle proprioception.'},
+      {ex:'Bulgarian split squat (bed)',sets:'4',reps:'10 each',note:'Left ankle maintained.'},
+      {ex:'Single-leg glute bridge',sets:'3',reps:'12 each',note:'Hold 2 sec top.'},
+      {ex:'Reverse lunge',sets:'3',reps:'10 each',note:'Less ankle stress.'},
+      {ex:'Wall sit',sets:'3',reps:'60 sec',note:'Uphill endurance.'},
+    ]},
+   ],
+   notes:['Resistance bands: carry-on, every trip, no exceptions.','Stairwells are Zion simulators. Nobody uses them.','Sleep 8+ hrs beats any bodyweight session when depleted.']},
+];
+
+const RECOVERY_SCH=[
+  {day:'Monday',training:'Push + Core',color:C.canyon,items:[
+    {lbl:'Post-Gym',p:'Sauna 15–20 min → Cold Plunge 2–3 min → Sauna 10 min',n:'Strength day: sauna FIRST. Cold after lifting blunts MPS.'},
+    {lbl:'Morning',p:'5–10 min direct sun before gym',n:'Sets cortisol pulse. Circadian anchor.'},
+  ]},
+  {day:'Tuesday',training:'Easy Run',color:C.sage,items:[
+    {lbl:'Post-Run',p:'Cold Plunge 2–3 min → Sauna 15 min',n:'Run day: cold first reduces leg inflammation.'},
+    {lbl:'Evening',p:'Legs elevated 10–15 min',n:'Gravity drainage. Reduces ankle swelling.'},
+  ]},
+  {day:'Wednesday',training:'Pull + Mobility',color:C.sky,items:[
+    {lbl:'Post-Gym',p:'Sauna 15–20 min → Cold Plunge 2–3 min',n:'Standard contrast.'},
+  ]},
+  {day:'Thursday',training:'Hinge + Tempo',color:C.gold,items:[
+    {lbl:'Post-Session',p:'Sauna 15 min → Cold Plunge 2 min (shorter)',n:'Double day. Hydration is priority.'},
+    {lbl:'ALERT',p:'Double electrolytes — highest dehydration risk day',n:'Gym + tempo + South Texas heat + sauna.'},
+  ]},
+  {day:'Friday',training:'Full Body — Turf',color:C.violet,items:[
+    {lbl:'Post-Gym',p:'Sauna 20 min → Cold Plunge 3 min → Sauna 10 min',n:'Best contrast. Heading into Saturday long run.'},
+  ]},
+  {day:'Saturday',training:'Long Run',color:C.goldL,items:[
+    {lbl:'Post-Run',p:'Cold Plunge ONLY — 3–5 min. No sauna.',n:'Too much thermal load after long run.'},
+  ]},
+  {day:'Sunday',training:'Full Rest',color:C.muted,items:[
+    {lbl:'Rule',p:'Zero everything.',n:'Rest IS the training.'},
+  ]},
+];
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let S={
+  screen:'today',week:1,completed:{},
+  runLogs:[],weightLogs:[],gymLogs:[],bloodLogs:[],photos:[],
+  exp:{},logTab:'run',bloodSub:'log',
+  ptab:'phases',tsc:'hotel',tsub:'sessions',recTab:'schedule',
+  selDay:null,saved:false,
+  rf:{date:td(),dist:'',dur:'',ahr:'',mhr:'',pace:'',inc:'',stroller:false,ankle:'3',effort:'3',notes:''},
+  gf:{date:td(),session:'Push + Core',ahr:'',mhr:'',dur:'',energy:'3',notes:''},
+  wf:{date:td(),weight:'',waist:'',notes:''},
+  bf:{},
+  pf:{week:'1',notes:'',src:''},
+};
+
+function td(){return new Date().toISOString().split('T')[0];}
+
+// ─── STORAGE ─────────────────────────────────────────────────────────────────
+function sv(k,v){try{localStorage.setItem('apd_'+k,JSON.stringify(v));}catch(e){}}
+function ld(k,d){try{const v=localStorage.getItem('apd_'+k);return v?JSON.parse(v):d;}catch(e){return d;}}
+function initStorage(){
+  S.week=ld('week',getWk(new Date()));
+  S.completed=ld('completed',{});
+  S.runLogs=ld('runLogs',[]);
+  S.weightLogs=ld('weightLogs',[]);
+  S.gymLogs=ld('gymLogs',[]);
+  S.bloodLogs=ld('bloodLogs',[]);
+  S.photos=ld('photos',[]);
+}
+
+// ─── UTILS ───────────────────────────────────────────────────────────────────
+function daysOut(){return Math.max(0,Math.ceil((RACE_DATE-new Date())/86400000));}
+function getWk(d){return Math.max(1,Math.min(36,Math.ceil((d-PROGRAM_START)/604800000)));}
+function getPhase(w){return PHASES.find(p=>w>=p.weeks[0]&&w<=p.weeks[1])||PHASES[0];}
+function getTodayDow(){return new Date().getDay();}
+function getTodayTpl(){return WT.find(t=>t.dow===getTodayDow())||WT[0];}
+function getRunDist(w,day){
+  if(day==='Tuesday'){
+    if(w<=2)return'20 min walk/run FLAT';if(w<=4)return'25 min walk/run FLAT';
+    if(w<=6)return'25–30 min @ 2%';if(w<=8)return'30–35 min @ 2–3%';
+    if(w<=11)return'3 mi @ 3%';if(w<=14)return'3–4 mi @ 3%';
+    if(w<=17)return'4–5 mi @ 3%';if(w<=20)return'4–5 mi @ 3–4%';
+    if(w<=24)return'5–6 mi @ 4%';if(w<=28)return'5–6 mi @ 4%';
+    if(w<=30)return'4–5 mi @ 4%';if(w<=32)return'4 mi @ 3%';
+    if(w<=33)return'3 mi easy';if(w<=34)return'2–3 mi easy';
+    if(w<=35)return'2 mi + 6 strides';return'2 mi Mon · REST · RACE SUN 7AM';
+  }
+  if(day==='Saturday'){
+    if(w<=2)return'20 min flat';if(w<=4)return'25 min flat';
+    if(w<=6)return'30 min @ 2%';if(w<=8)return'35 min @ 2–3% · KidRunner intro';
+    if(w<=11)return'4 mi @ 3% + KidRunner';if(w<=14)return'5 mi @ 3% + KidRunner';
+    if(w<=17)return'6–7 mi @ 3–4% + KidRunner';if(w<=20)return'8–9 mi @ 3–4%';
+    if(w<=24)return'8–10 mi @ 4% + KidRunner';if(w<=28)return'10–11 mi @ 4% PEAK';
+    if(w<=30)return'9–10 mi @ 4%';if(w<=32)return'7–8 mi taper';
+    if(w<=33)return'6 mi @ 3%';if(w<=34)return'4–5 mi easy';
+    if(w<=35)return'3 mi + 6 strides';return'🏁 RACE DAY — Feb 27 · 7:00am MT';
+  }
+  if(day==='Thursday')return w>=9?'Tempo: 20–30 min @ 4–5% HR 155–165':'No tempo yet — starts Wk 9';
+  return'';
+}
+function mStatus(m,val){
+  if(!val)return'none';
+  const v=parseFloat(val);if(isNaN(v))return'none';
+  if(m.dir==='lo') return v<=m.hi?'green':v<=m.hi*1.3?'yellow':'red';
+  if(m.dir==='hi') return v>=m.lo?'green':v>=m.lo*0.8?'yellow':'red';
+  if(m.dir==='range') return(v>=m.lo&&v<=m.hi)?'green':(v>=m.lo*0.85&&v<=m.hi*1.2)?'yellow':'red';
+  return'none';
+}
+function sColor(s){
+  if(s==='green')return'#35d068';
+  if(s==='yellow')return'#f0c030';
+  if(s==='red')return'#e05050';
+  return'#4a6070';
+}
+function miniC(data,color,h=60){
+  if(!data||data.length<2)return`<div style="height:${h}px;display:flex;align-items:center;justify-content:center;font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:10px;color:#4a6070">Log more data to see trend</div>`;
+  const vals=data.map(d=>d.v);
+  const mn=Math.min(...vals),mx=Math.max(...vals),rng=mx-mn||1;
+  const W=300,H=h;
+  const xs=W/(data.length-1);
+  const ys=v=>H-((v-mn)/rng)*H*0.85-H*0.05;
+  const pts=data.map((d,i)=>`${i*xs},${ys(d.v)}`).join(' ');
+  const area=`0,${H} ${pts} ${(data.length-1)*xs},${H}`;
+  const cid=color.replace('#','');
+  return`<svg viewBox="0 0 ${W} ${H}" class="csvg" style="height:${h}px">
+    <defs><linearGradient id="g${cid}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${color}" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="${color}" stop-opacity="0.02"/>
+    </linearGradient></defs>
+    <polygon points="${area}" fill="url(#g${cid})"/>
+    <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    ${data.map((d,i)=>`<circle cx="${i*xs}" cy="${ys(d.v)}" r="3" fill="${color}"/>`).join('')}
+  </svg>`;
+}
+
+// ─── MOTIVATIONAL ────────────────────────────────────────────────────────────
+function getDailyMoto(){
+  const day=new Date().toDateString();
+  const lastDay=ld('motoDay','');
+  if(lastDay===day)return null; // Already shown today
+  const raw=Math.floor(Math.abs((new Date()-new Date('2026-06-06'))/86400000));
+  const idx=raw%MOTO.length;
+  return MOTO[idx]||MOTO[0];
+}
+function showMoto(){
+  const m=getDailyMoto();
+  if(!m){document.getElementById('moto-overlay').style.display='none';checkNotifs();return;}
+  const now=new Date();
+  document.getElementById('moto-date').textContent=now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}).toUpperCase()+' · WK '+S.week;
+  document.getElementById('moto-icon').textContent=m.icon;
+  document.getElementById('moto-quote').innerHTML=m.quote;
+  document.getElementById('moto-sub').textContent=m.sub;
+  document.getElementById('moto-overlay').style.display='flex';
+}
+function dismissMoto(){
+  sv('motoDay',new Date().toDateString());
+  document.getElementById('moto-overlay').style.display='none';
+  checkNotifs();
+}
+
+// ─── NOTIFICATIONS ────────────────────────────────────────────────────────────
+function checkNotifs(){
+  const now=new Date();
+  const dow=now.getDay();
+  const msgs=[];
+
+  // Injection reminder — Monday (1) and Thursday (4)
+  if(INJECTION_DAYS.includes(dow)){
+    const injKey='inj_'+now.toDateString();
+    if(!ld(injKey,false)){
+      msgs.push({text:'💉 INJECTION DAY — TRT 0.5ml + HCG 0.25 IU · Log after done',key:injKey});
+    }
+  }
+
+  // Bloodwork reminder
+  const nextBW=getNextBloodworkDate();
+  const nextBWDate=new Date(nextBW);
+  const daysUntilBW=Math.ceil((nextBWDate-now)/86400000);
+  if(daysUntilBW<=3&&daysUntilBW>=0){
+    const bwKey='bwremind_'+nextBW;
+    if(!ld(bwKey,false)){
+      msgs.push({text:`🩸 BLOODWORK DUE ${daysUntilBW===0?'TODAY':daysUntilBW===1?'TOMORROW':'IN '+daysUntilBW+' DAYS'} — LabCorp · Upload results to Claude`,key:bwKey});
+    }
+  }
+
+  if(msgs.length>0){
+    const bar=document.getElementById('notif-bar');
+    document.getElementById('notif-text').textContent=msgs[0].text;
+    bar.style.display='flex';
+    bar.dataset.key=msgs[0].key;
+  }
+}
+function dismissNotif(){
+  const bar=document.getElementById('notif-bar');
+  if(bar.dataset.key)sv(bar.dataset.key,true);
+  bar.style.display='none';
+}
+
+// ─── RENDER ENGINE ────────────────────────────────────────────────────────────
+function render(){
+  const ph=getPhase(S.week);
+  const pct=(S.week/36*100).toFixed(0);
+  document.getElementById('days-num').textContent=daysOut();
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('week-phase').textContent='WK '+S.week+' · '+ph.name.toUpperCase();
+  document.getElementById('week-phase').style.color=ph.color;
+  document.querySelectorAll('.nb').forEach(b=>b.classList.toggle('active',b.dataset.screen===S.screen));
+  const c=document.getElementById('content');
+  c.innerHTML='';
+  const d=document.createElement('div');
+  d.className='screen';
+  d.innerHTML=rScreen();
+  c.appendChild(d);
+  c.scrollTop=0;
+  bindAll();
+}
+
+function rScreen(){
+  switch(S.screen){
+    case'today':return rToday();
+    case'week':return rWeek();
+    case'log':return rLog();
+    case'progress':return rProgress();
+    case'program':return rProgram();
+    default:return'';
+  }
+}
+
+// ─── TODAY ────────────────────────────────────────────────────────────────────
+function rToday(){
+  const vd=S.selDay||getTodayTpl();
+  const sess=SESSIONS[vd.day];
+  const key=S.week+'-'+vd.day;
+  const done=S.completed[key];
+  const rd=getRunDist(S.week,vd.day);
+  const lw=S.weightLogs.find(l=>l.weight);
+  const tm=S.runLogs.reduce((s,l)=>s+(parseFloat(l.dist)||0),0);
+  const wr=S.runLogs.filter(l=>l.week===S.week).length;
+
+  let h=`<div class="sc" style="background:linear-gradient(135deg,${vd.color}18,var(--s2));border:1px solid ${vd.color}40;">
+    <div class="sh">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div>
+          <div class="stag" style="color:${vd.color};">${vd.day.toUpperCase()} · WK ${S.week} · ${vd.tag}</div>
+          <div class="stitle">${vd.label}</div>
+          <div class="ssub">${vd.type==='GYM+RUN'?'Gym + Tempo Run':vd.type}</div>
+        </div>
+        <div style="font-size:30px;color:${vd.color};">${vd.icon}</div>
+      </div>
+      ${rd?`<div class="rbadge" style="background:${C.sage}18;border:1px solid ${C.sage}40;color:${C.sageL};">🏃 ${rd}</div>`:''}
+      <button class="cbtn" id="cbtn" style="background:${done?'rgba(32,160,80,0.2)':'transparent'};border:1px solid ${done?'var(--green)':'var(--borderhi)'};color:${done?'var(--greenL)':'var(--muted)'};">
+        ${done?'✓ SESSION COMPLETE':'○ MARK COMPLETE'}
+      </button>
+    </div>`;
+
+  if(sess.warmup.length>0){
+    const wo=S.exp.wu;
+    h+=`<button class="abtn" id="acc-wu" style="color:${wo?C.goldL:'var(--muted)'};">
+      <span>⟶ WARM-UP</span><span>${wo?'−':'+'}</span></button>`;
+    if(wo){
+      h+=`<div class="acont">`;
+      sess.warmup.forEach((item,i)=>h+=`<div class="wurow"><span class="wunum">${String(i+1).padStart(2,'0')}</span>${item}</div>`);
+      h+=`</div>`;
+    }
+  }
+
+  sess.blocks.forEach((bl,bi)=>{
+    const bo=S.exp['b'+bi];
+    h+=`<button class="abtn" id="acc-b${bi}" style="background:${bo?bl.color+'10':'transparent'};color:${bo?bl.color:'var(--muted)'};">
+      <div style="display:flex;align-items:center;gap:7px;"><div style="width:3px;height:11px;background:${bl.color};border-radius:2px;"></div><span>${bl.name}</span></div>
+      <span>${bo?'−':'+'}</span></button>`;
+    if(bo){
+      h+=`<div class="acont"><div class="exhdr"><span>EXERCISE</span><span>SETS</span><span>REPS</span><span>NOTE</span></div>`;
+      bl.exercises.forEach(ex=>h+=`<div class="exrow">
+        <span class="exn">${ex.ex}</span>
+        <span class="exs" style="color:${bl.color};">${ex.sets}</span>
+        <span class="exr">${ex.reps}</span>
+        <span class="exnote">${ex.note}</span>
+      </div>`);
+      h+=`</div>`;
+    }
+  });
+
+  const co=S.exp.cool;
+  h+=`<button class="abtn" id="acc-cool" style="color:${co?C.sageL:'var(--muted)'};">
+    <span>⟶ COOL-DOWN + RECOVERY</span><span>${co?'−':'+'}</span></button>`;
+  if(co){
+    h+=`<div style="padding:10px 15px 13px;">
+      <div style="font-size:11px;color:var(--text);margin-bottom:7px;line-height:1.6;">${sess.cooldown}</div>
+      <div style="padding:6px 9px;background:${C.sky}12;border:1px solid ${C.sky}35;border-radius:5px;font-size:11px;color:${C.skyL};margin-bottom:5px;">🧊 ${sess.recovery}</div>
+      ${sess.ankleNote?`<div style="padding:6px 9px;background:${C.sage}10;border:1px solid ${C.sage}30;border-radius:5px;font-size:11px;color:${C.sageL};">🦶 ${sess.ankleNote}</div>`:''}
+    </div>`;
+  }
+  h+=`</div>`;
+
+  h+=`<div class="srow">
+    <div class="sc2"><div class="slb">WEIGHT</div><div class="sv" style="color:var(--canyon);">${lw?lw.weight:'—'}</div><div class="su">target 200</div></div>
+    <div class="sc2"><div class="slb">RUNS WK</div><div class="sv" style="color:var(--sage);">${wr}</div><div class="su">this week</div></div>
+    <div class="sc2"><div class="slb">TOTAL MI</div><div class="sv" style="color:var(--sky);">${tm.toFixed(1)}</div><div class="su">logged</div></div>
+  </div>`;
+
+  h+=`<div class="wadj">
+    <button class="wadjb" id="wk-m">−</button>
+    <div class="wadjc">
+      <div class="wadjw">Week ${S.week}</div>
+      <div class="wadjp" style="color:${getPhase(S.week).color};">${getPhase(S.week).name}</div>
+    </div>
+    <button class="wadjb" id="wk-p">+</button>
+  </div>`;
+
+  return h;
+}
+
+// ─── WEEK ─────────────────────────────────────────────────────────────────────
+function rWeek(){
+  const tdow=getTodayDow();
+  let h=`<div class="slabel">WEEK ${S.week} SCHEDULE</div>`;
+  WT.forEach(d=>{
+    const k=S.week+'-'+d.day;
+    const done=S.completed[k];
+    const isT=d.dow===tdow;
+    const dist=getRunDist(S.week,d.day);
+    h+=`<div class="drow" style="background:${isT?d.color+'12':'var(--s1)'};border-color:${isT?d.color:'var(--border)'};" onclick="selDay(${d.dow})">
+      <div class="dico" style="color:${d.color};">${d.icon}</div>
+      <div style="flex:1;">
+        <div class="dnm" style="color:${isT?d.color:'var(--text)'};">
+          ${d.day}
+          ${isT?`<span class="badge" style="background:rgba(224,90,26,0.2);color:var(--canyon);">TODAY</span>`:''}
+          ${done?`<span class="badge" style="background:rgba(32,160,80,0.18);color:var(--greenL);">✓</span>`:''}
+        </div>
+        <div class="dlb">${d.label}</div>
+        ${dist?`<div class="ddi">📍 ${dist}</div>`:''}
+      </div>
+      <div class="dtag" style="color:${d.color};background:${d.color}15;">${d.tag}</div>
+    </div>`;
+  });
+  return h;
+}
+
+// ─── LOG ─────────────────────────────────────────────────────────────────────
+function rLog(){
+  const tabs=[{id:'run',lbl:'🏃 Run'},{id:'gym',lbl:'💪 Gym'},{id:'weight',lbl:'⚖️ Weight'},{id:'blood',lbl:'🩸 Blood'},{id:'photo',lbl:'📸 Photo'}];
+  let h='';
+  if(S.saved)h+=`<div class="toast">✓ Saved successfully</div>`;
+  h+=`<div class="ltabs">`;
+  tabs.forEach(t=>{
+    const a=S.logTab===t.id;
+    h+=`<button class="ltab" onclick="setLT('${t.id}')" style="background:${a?'var(--canyon)':'var(--s1)'};border:1px solid ${a?'var(--canyon)':'var(--border)'};color:${a?'#fff':'var(--muted)'};">${t.lbl}</button>`;
+  });
+  h+=`</div>`;
+  if(S.logTab==='run')h+=rRunF();
+  if(S.logTab==='gym')h+=rGymF();
+  if(S.logTab==='weight')h+=rWtF();
+  if(S.logTab==='blood')h+=rBloodF();
+  if(S.logTab==='photo')h+=rPhotoF();
+  return h;
+}
+
+function fi(v,id,type='text',ph='',extra=''){return`<input class="fi" type="${type}" id="${id}" value="${v||''}" placeholder="${ph}" ${extra}>`;}
+
+function rRunF(){const f=S.rf;return`<div class="card"><div class="cb">
+  <div class="slabel">LOG RUN</div>
+  <div class="g2" style="margin-bottom:8px;">
+    <div class="fg"><div class="fl">DATE</div>${fi(f.date,'rf-d','date')}</div>
+    <div class="fg"><div class="fl">DISTANCE (mi)</div>${fi(f.dist,'rf-dist','number','0.0','step="0.1"')}</div>
+  </div>
+  <div class="g2" style="margin-bottom:8px;">
+    <div class="fg"><div class="fl">DURATION (min)</div>${fi(f.dur,'rf-dur','number','0')}</div>
+    <div class="fg"><div class="fl">AVG PACE (min/mi)</div>${fi(f.pace,'rf-pace','text','00:00')}</div>
+  </div>
+  <div class="g3" style="margin-bottom:8px;">
+    <div class="fg"><div class="fl">AVG HR</div>${fi(f.ahr,'rf-ahr','number','0')}</div>
+    <div class="fg"><div class="fl">MAX HR</div>${fi(f.mhr,'rf-mhr','number','0')}</div>
+    <div class="fg"><div class="fl">INCLINE %</div>${fi(f.inc,'rf-inc','number','0','step="0.5"')}</div>
+  </div>
+  <div class="g2" style="margin-bottom:8px;">
+    <div class="fg"><div class="fl">ANKLE FEEL (1–5)</div>
+      <div class="rrow">${[1,2,3,4,5].map(n=>`<button class="rbtn" onclick="setR('ankle','${n}')" style="background:${f.ankle==n?C.sage:'var(--s2)'};border:1px solid ${f.ankle==n?C.sage:'var(--border)'};color:${f.ankle==n?'#fff':'var(--muted)'};">${n}</button>`).join('')}</div>
+    </div>
+    <div class="fg"><div class="fl">EFFORT (1–5)</div>
+      <div class="rrow">${[1,2,3,4,5].map(n=>`<button class="rbtn" onclick="setR('effort','${n}')" style="background:${f.effort==n?C.canyon:'var(--s2)'};border:1px solid ${f.effort==n?C.canyon:'var(--border)'};color:${f.effort==n?'#fff':'var(--muted)'};">${n}</button>`).join('')}</div>
+    </div>
+  </div>
+  <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:11px;margin-bottom:8px;"><input type="checkbox" id="rf-str" ${f.stroller?'checked':''} style="accent-color:var(--canyon);"><span>KidRunner stroller run</span></label>
+  <div class="fg"><div class="fl">NOTES</div><textarea class="fta" id="rf-notes" rows="2" placeholder="Ankle notes, how it felt...">${f.notes||''}</textarea></div>
+  <button class="sbtn" id="save-run" style="background:var(--canyon);color:#fff;">SAVE RUN →</button>
+</div></div>`;}
+
+function rGymF(){const f=S.gf;return`<div class="card"><div class="cb">
+  <div class="slabel">LOG GYM SESSION</div>
+  <div class="g2" style="margin-bottom:8px;">
+    <div class="fg"><div class="fl">DATE</div>${fi(f.date,'gf-d','date')}</div>
+    <div class="fg"><div class="fl">SESSION</div>
+      <select class="fi" id="gf-sess">${['Push + Core','Pull + Mobility','Hinge + Tempo','Full Body Power'].map(s=>`<option ${f.session===s?'selected':''}>${s}</option>`).join('')}</select>
+    </div>
+  </div>
+  <div class="g3" style="margin-bottom:8px;">
+    <div class="fg"><div class="fl">AVG HR</div>${fi(f.ahr,'gf-ahr','number','0')}</div>
+    <div class="fg"><div class="fl">MAX HR</div>${fi(f.mhr,'gf-mhr','number','0')}</div>
+    <div class="fg"><div class="fl">DURATION</div>${fi(f.dur,'gf-dur','number','0')}</div>
+  </div>
+  <div class="fg" style="margin-bottom:8px;"><div class="fl">ENERGY (1–5)</div>
+    <div class="rrow">${[1,2,3,4,5].map(n=>`<button class="rbtn" onclick="setGE('${n}')" style="background:${f.energy==n?C.violet:'var(--s2)'};border:1px solid ${f.energy==n?C.violet:'var(--border)'};color:${f.energy==n?'#fff':'var(--muted)'};">${n}</button>`).join('')}</div>
+  </div>
+  <div class="fg"><div class="fl">NOTES</div><textarea class="fta" id="gf-notes" rows="2" placeholder="PRs, energy, notes...">${f.notes||''}</textarea></div>
+  <button class="sbtn" id="save-gym" style="background:var(--violet);color:#fff;">SAVE SESSION →</button>
+</div></div>`;}
+
+function rWtF(){const f=S.wf;return`<div class="card"><div class="cb">
+  <div class="slabel">WEEKLY CHECK-IN</div>
+  <div class="g2" style="margin-bottom:8px;">
+    <div class="fg"><div class="fl">DATE</div>${fi(f.date,'wf-d','date')}</div>
+    <div class="fg"><div class="fl">WEIGHT (lbs)</div>${fi(f.weight,'wf-w','number','228','step="0.1"')}</div>
+  </div>
+  <div class="fg" style="margin-bottom:8px;"><div class="fl">WAIST (inches — at navel)</div>${fi(f.waist,'wf-ws','number','0','step="0.25"')}</div>
+  <div style="padding:7px 9px;background:var(--s2);border-radius:5px;font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:9px;color:var(--muted);margin-bottom:8px;">Monday morning fasted. Same time every week.</div>
+  <div class="fg"><div class="fl">NOTES</div><textarea class="fta" id="wf-notes" rows="2" placeholder="Energy, sleep, how you feel...">${f.notes||''}</textarea></div>
+  <button class="sbtn" id="save-wt" style="background:var(--gold);color:#000;">SAVE CHECK-IN →</button>
+</div></div>`;}
+
+function rBloodF(){
+  let h=`<div style="display:flex;gap:5px;margin-bottom:11px;">`;
+  ['log','history'].forEach(t=>{
+    const a=S.bloodSub===t;
+    h+=`<button onclick="setBSub('${t}')" style="flex:1;background:${a?'var(--red)':'var(--s1)'};border:1px solid ${a?'var(--red)':'var(--border)'};border-radius:5px;padding:8px;font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:10px;color:${a?'#fff':'var(--muted)'};cursor:pointer;">${t==='log'?'Log Results':'History'}</button>`;
+  });
+  h+=`</div>`;
+
+  if(S.bloodSub==='log'){
+    h+=`<div class="card"><div class="cb">
+      <div class="slabel">ENTER PANEL RESULTS</div>
+      <div style="padding:8px 10px;background:rgba(224,90,26,0.1);border:1px solid rgba(224,90,26,0.3);border-radius:5px;font-size:11px;color:var(--canyonL);margin-bottom:11px;font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;line-height:1.5;">
+        Upload LabCorp screenshot to Claude → I extract all values → Enter key numbers here
+      </div>
+      <div class="fg" style="margin-bottom:9px;"><div class="fl">DRAW DATE</div>${fi(S.bf.date||td(),'bf-d','date')}</div>`;
+    BLOOD_MARKERS.forEach(m=>{
+      const val=S.bf[m.name]||'';
+      h+=`<div class="bwmi">
+        <div style="font-size:12px;font-weight:600;flex:1;">${m.name}</div>
+        <div style="font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:9px;color:var(--muted);min-width:55px;text-align:right;">${m.target} ${m.unit}</div>
+        <input class="bwin" type="number" step="0.1" placeholder="—" value="${val}" data-marker="${m.name}" oninput="setBV(this.dataset.marker,this.value)">
+      </div>`;
+    });
+    h+=`<button class="sbtn" id="save-blood" style="background:var(--red);color:#fff;margin-top:7px;">SAVE PANEL →</button></div></div>`;
+  } else {
+    if(S.bloodLogs.length===0){
+      h+=`<div class="card"><div class="cb" style="text-align:center;padding:24px;font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:11px;color:var(--muted);">No panels logged yet.</div></div>`;
+    } else {
+      const latest=S.bloodLogs[0];
+      h+=`<div class="card"><div class="cb"><div class="slabel">LATEST — ${latest.date}</div>`;
+      BLOOD_MARKERS.forEach(m=>{
+        const val=latest[m.name];if(!val)return;
+        const st=mStatus(m,val);const sc=sColor(st);
+        h+=`<div class="mrow">
+          <div class="mtop">
+            <div style="display:flex;align-items:center;gap:7px;"><div class="tdot" style="background:${sc};"></div><div class="mnm">${m.name}</div></div>
+            <div class="mright"><div class="mval" style="color:${sc};">${val}</div><div style="font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:8px;color:var(--muted);">${m.unit}</div><div class="mtgt" style="background:${sc}18;color:${sc};">${m.target}</div></div>
+          </div>
+          <div class="mwhy">${m.why}</div>
+        </div>`;
+      });
+      h+=`</div></div>`;
+    }
+  }
+  return h;
+}
+
+function rPhotoF(){const f=S.pf;return`<div class="card"><div class="cb">
+  <div class="slabel">WEEKLY PHOTO</div>
+  <div style="padding:8px 10px;background:var(--s2);border-radius:5px;font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:9px;color:var(--muted);margin-bottom:10px;line-height:1.5;">
+    📸 Photos store in this app as your visual timeline.<br>To get AI analysis → bring photo to Claude and upload there.
+  </div>
+  <div class="g2" style="margin-bottom:8px;">
+    <div class="fg"><div class="fl">WEEK #</div>${fi(f.week,'pf-wk','number','1','min="1" max="36"')}</div>
+    <div class="fg"><div class="fl">PHOTO</div>
+      <button onclick="triggerPhotoUpload()" style="width:100%;background:var(--s2);border:1px solid var(--borderhi);border-radius:5px;padding:8px;color:${f.src?C.greenL:'var(--muted)'};font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:9px;cursor:pointer;">
+        ${f.src?'✓ Selected':'📷 Choose'}
+      </button>
+      <input type="file" id="pf-file" accept="image/*" style="display:none;" onchange="handlePh(event)">
+    </div>
+  </div>
+  ${f.src?`<div style="border-radius:7px;overflow:hidden;border:1px solid var(--border);margin-bottom:8px;"><img src="${f.src}" style="width:100%;max-height:170px;object-fit:cover;display:block;"></div>`:''}
+  <div class="fg"><div class="fl">NOTES</div><textarea class="fta" id="pf-notes" rows="2" placeholder="Weight this week, progress notes...">${f.notes||''}</textarea></div>
+  <button class="sbtn" id="save-photo" style="background:${f.src?'var(--sky)':'var(--s2)'};color:${f.src?'#fff':'var(--muted)'};"${!f.src?' disabled':''}>SAVE PHOTO →</button>
+</div></div>`;}
+
+// ─── PROGRESS ─────────────────────────────────────────────────────────────────
+function rProgress(){
+  const lw=S.weightLogs.find(l=>l.weight);
+  const lwst=S.weightLogs.find(l=>l.waist);
+  const tm=S.runLogs.reduce((s,l)=>s+(parseFloat(l.dist)||0),0);
+  const sd=Object.values(S.completed).filter(Boolean).length;
+  const sw=228,tw=200;
+  const cw=lw?parseFloat(lw.weight):sw;
+  const pct=Math.max(0,Math.min(100,((sw-cw)/(sw-tw)*100)));
+  const wData=S.weightLogs.filter(l=>l.weight).map(l=>({v:parseFloat(l.weight)}));
+  const wsData=S.weightLogs.filter(l=>l.waist).map(l=>({v:parseFloat(l.waist)}));
+  const dData=S.runLogs.filter(l=>l.dist).slice(0,20).reverse().map(l=>({v:parseFloat(l.dist)}));
+  const hrData=S.runLogs.filter(l=>l.ahr).slice(0,20).reverse().map(l=>({v:parseInt(l.ahr)}));
+
+  let h=`<div class="slabel">PROGRESS DASHBOARD</div>`;
+  h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:13px;">
+    <div class="sc2" style="text-align:left;padding:11px;">
+      <div class="slb">CURRENT WEIGHT</div>
+      <div style="font-family:'Bebas Neue','Arial Narrow','Impact',sans-serif,'Arial Narrow','Impact',sans-serif;font-size:22px;color:var(--canyon);">${lw?lw.weight+' lbs':'—'}</div>
+      <div class="su">Start 228 · Target 200</div>
+      <div class="pgbar"><div class="pgfill" style="width:${pct}%;background:var(--canyon);"></div></div>
+    </div>
+    <div class="sc2" style="text-align:left;padding:11px;">
+      <div class="slb">WAIST</div>
+      <div style="font-family:'Bebas Neue','Arial Narrow','Impact',sans-serif,'Arial Narrow','Impact',sans-serif;font-size:22px;color:var(--gold);">${lwst?lwst.waist+'"':'—'}</div>
+      <div class="su">Visceral fat proxy · &lt;37"</div>
+    </div>
+    <div class="sc2" style="text-align:left;padding:11px;">
+      <div class="slb">TOTAL MILES</div>
+      <div style="font-family:'Bebas Neue','Arial Narrow','Impact',sans-serif,'Arial Narrow','Impact',sans-serif;font-size:22px;color:var(--sage);">${tm.toFixed(1)}</div>
+      <div class="su">${S.runLogs.length} runs logged</div>
+    </div>
+    <div class="sc2" style="text-align:left;padding:11px;">
+      <div class="slb">SESSIONS DONE</div>
+      <div style="font-family:'Bebas Neue','Arial Narrow','Impact',sans-serif,'Arial Narrow','Impact',sans-serif;font-size:22px;color:var(--violet);">${sd}</div>
+      <div class="su">Week ${S.week} of 36</div>
+    </div>
+  </div>`;
+
+  h+=`<div class="cc"><div style="display:flex;justify-content:space-between;"><div class="ctitle" style="color:var(--canyon);">WEIGHT (lbs)</div><div style="font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:8px;color:var(--muted);">Target: 200</div></div>${miniC(wData,'#e05a1a',65)}${wData.length>1?`<div class="cfooter"><span>${wData[0].v} lbs</span><span style="color:var(--canyon);">${wData[wData.length-1].v} lbs now</span></div>`:''}</div>`;
+  h+=`<div class="cc"><div class="ctitle" style="color:var(--gold);">WAIST (inches) — VISCERAL FAT</div>${miniC(wsData,'#c89020',55)}</div>`;
+  h+=`<div class="cc"><div class="ctitle" style="color:var(--sage);">RUN DISTANCE (miles)</div>${miniC(dData,'#2a8050',55)}</div>`;
+  h+=`<div class="cc"><div style="display:flex;justify-content:space-between;"><div class="ctitle" style="color:var(--sky);">AVG HEART RATE</div><div style="font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:8px;color:var(--muted);">Zone 2: 130–145</div></div>${miniC(hrData,'#1a6ab8',55)}</div>`;
+
+  if(S.bloodLogs.length>0){
+    const lat=S.bloodLogs[0];
+    const km=['Fasting Insulin','ApoB','Hematocrit','hs-CRP','Total Testosterone','Estradiol (E2)'];
+    h+=`<div class="card"><div class="cb"><div class="slabel">KEY BLOOD MARKERS — ${lat.date}</div>`;
+    km.forEach(name=>{
+      const m=BLOOD_MARKERS.find(x=>x.name===name);
+      const val=lat[name];
+      if(!m||!val)return;
+      const st=mStatus(m,val);const sc=sColor(st);
+      h+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--dim);">
+        <div style="display:flex;align-items:center;gap:7px;"><div class="tdot" style="background:${sc};"></div><span style="font-size:12px;font-weight:600;">${name}</span></div>
+        <div style="display:flex;align-items:center;gap:5px;">
+          <span style="font-family:'Bebas Neue','Arial Narrow','Impact',sans-serif,'Arial Narrow','Impact',sans-serif;font-size:17px;color:${sc};">${val}</span>
+          <span style="font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:8px;color:var(--muted);">${m.unit}</span>
+        </div>
+      </div>`;
+    });
+    h+=`</div></div>`;
+  }
+
+  if(S.photos.length>0){
+    h+=`<div class="slabel" style="margin-top:8px;">BODY COMP PHOTOS</div><div class="pgrid">`;
+    S.photos.slice(0,8).forEach(p=>{
+      h+=`<div class="pitem"><img src="${p.src}" class="pimg"><div class="pcap"><div class="pwk">Week ${p.week}</div>${p.notes?`<div class="pnt">${p.notes.slice(0,40)}${p.notes.length>40?'...':''}</div>`:''}</div></div>`;
+    });
+    h+=`</div>`;
+  }
+
+  if(S.runLogs.length>0){
+    h+=`<div class="card"><div class="cb"><div class="slabel">RECENT RUNS</div>`;
+    S.runLogs.slice(0,5).forEach(log=>{
+      h+=`<div style="display:grid;grid-template-columns:70px 1fr 1fr 1fr;gap:5px;padding:7px 0;border-bottom:1px solid var(--dim);align-items:center;">
+        <span style="font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:9px;color:var(--muted);">${log.date}</span>
+        <span style="font-family:'Bebas Neue','Arial Narrow','Impact',sans-serif,'Arial Narrow','Impact',sans-serif;font-size:15px;color:var(--sage);">${log.dist||'—'} mi</span>
+        <span style="font-size:11px;color:var(--muted);">${log.ahr?'♥ '+log.ahr:'—'}</span>
+        <span style="font-size:10px;color:${log.stroller?C.canyon:'var(--muted)'};">${log.stroller?'🏃 Stroller':log.pace||'—'}</span>
+      </div>`;
+    });
+    h+=`</div></div>`;
+  }
+  return h;
+}
+
+// ─── PROGRAM ──────────────────────────────────────────────────────────────────
+function rProgram(){
+  const tabs=[{id:'phases',l:'Race Plan'},{id:'nutrition',l:'Nutrition'},{id:'travel',l:'Travel'},{id:'recovery',l:'Recovery'}];
+  let h=`<div class="ptab-row">`;
+  tabs.forEach(t=>{h+=`<button class="ptab ${S.ptab===t.id?'active':''}" onclick="setPT('${t.id}')">${t.l}</button>`;});
+  h+=`</div>`;
+  if(S.ptab==='phases')h+=rPhases();
+  if(S.ptab==='nutrition')h+=rNutrition();
+  if(S.ptab==='travel')h+=rTravel();
+  if(S.ptab==='recovery')h+=rRecovery();
+  return h;
+}
+
+function rPhases(){
+  let h=`<div style="padding:10px 13px;background:rgba(224,90,26,0.1);border:1px solid rgba(224,90,26,0.3);border-radius:8px;margin-bottom:13px;">
+    <div style="font-family:'Bebas Neue','Arial Narrow','Impact',sans-serif,'Arial Narrow','Impact',sans-serif;font-size:14px;color:var(--canyonL);margin-bottom:5px;">🏔 ZION HALF — FEB 27, 2027</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:9px;">
+      <span style="color:var(--muted);">Distance</span><span>13.1 miles net uphill</span>
+      <span style="color:var(--muted);">Elevation</span><span>+722 ft Virgin→Springdale</span>
+      <span style="color:var(--muted);">Race Start</span><span>7:00am MT · Feb 27 2027</span>
+      <span style="color:var(--muted);">Stroller</span><span>KidRunner hip harness</span>
+      <span style="color:var(--muted);">Cup Policy</span><span>Cup-free · vest mandatory</span>
+      <span style="color:var(--muted);">Cutoff</span><span>4 hrs (18 min/mile)</span>
+    </div>
+  </div>`;
+  PHASES.forEach(p=>{
+    const isA=S.week>=p.weeks[0]&&S.week<=p.weeks[1];
+    const runs=PHASE_RUNS[p.num];
+    h+=`<div class="phcard" style="background:${p.color}10;border:1px solid ${p.color}${isA?'80':'30'};">
+      <div class="phhdr" style="background:${p.color}${isA?'25':'15'};">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div class="phnum" style="color:${p.color};">PHASE ${p.num} · WKS ${p.weeks[0]}–${p.weeks[1]} · ${p.tag.toUpperCase()}</div>
+            <div class="phname" style="color:${isA?p.color:'var(--text)'};">${p.name}</div>
+          </div>
+          ${isA?`<span style="font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:7px;color:var(--greenL);background:rgba(32,160,80,0.2);padding:2px 7px;border-radius:9px;">● NOW</span>`:''}
+        </div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-top:2px;">${p.desc}</div>
+      </div>
+      <div class="phbody">`;
+    runs.forEach(r=>{
+      h+=`<div class="runrow"><span class="rwk" style="color:${p.color};">${r.wk}</span><span class="rsess">${r.s}</span><span class="rdet">${r.d}</span></div>`;
+    });
+    h+=`</div></div>`;
+  });
+  h+=`<div class="card"><div class="cb"><div class="slabel">NON-NEGOTIABLES</div>`;
+  [[C.canyon,'Incline from Wk 5 — treadmill 2–3% minimum'],
+   [C.sage,'Left ankle: stop at pain, never push through'],
+   [C.sky,'KidRunner intro Wk 8 — flat 20 min only'],
+   [C.gold,'Hydration vest mandatory from Wk 8'],
+   ['var(--violet)','Sunday = full rest, no exceptions'],
+   ['var(--red)','Hematocrit: 16–20oz electrolytes before every sauna'],
+   ['var(--greenL)','Bloodwork every 6 weeks — upload to Claude'],
+  ].forEach(([col,txt])=>{
+    h+=`<div style="display:flex;gap:7px;padding:5px 0;border-bottom:1px solid var(--dim);font-size:11px;"><span style="color:${col};font-weight:700;">→</span>${txt}</div>`;
+  });
+  h+=`</div></div>`;
+  return h;
+}
+
+function rNutrition(){
+  let h=`<div style="padding:7px 11px;background:rgba(224,90,26,0.07);border:1px solid rgba(224,90,26,0.2);border-radius:6px;margin-bottom:11px;font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:9px;color:var(--canyonL);">
+    Animal-based · Strategic plants · Strategic dairy · No pork · No seed oils
+  </div>`;
+  MEALS.forEach(m=>{
+    h+=`<div class="mc"><div class="mh" style="background:${m.color}10;border-bottom:1px solid ${m.color}20;">
+      <div class="memo">${m.emoji}</div>
+      <div><div class="mt" style="color:${m.color};">${m.time}</div><div class="mn2">${m.label}</div></div>
+    </div><div class="mb">`;
+    m.items.forEach(item=>h+=`<div class="mi"><span style="color:${m.color};">▸</span>${item}</div>`);
+    h+=`</div></div>`;
+  });
+  h+=`<div class="card"><div class="cb"><div class="slabel" style="color:var(--skyL);">LONG RUN DAY ADDITIONS (Phase 3+)</div>`;
+  [['5:30am','Beets 2 hrs pre + 2 oz raw honey'],
+   ['Post-run','Sweet potato with butter OR ½ cup white rice'],
+   ['9:00pm','Add 1 tbsp raw honey on cottage cheese'],
+  ].forEach(([t,v])=>{
+    h+=`<div style="display:flex;gap:9px;padding:5px 0;border-bottom:1px solid var(--dim);font-size:11px;">
+      <span style="color:var(--sky);min-width:46px;font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:9px;">${t}</span><span>${v}</span>
+    </div>`;
+  });
+  h+=`</div></div>`;
+  return h;
+}
+
+function rTravel(){
+  let h=`<div style="background:rgba(224,90,26,0.1);border:1px solid rgba(224,90,26,0.35);border-radius:9px;padding:11px 13px;margin-bottom:11px;">
+    <div style="font-family:'Bebas Neue','Arial Narrow','Impact',sans-serif,'Arial Narrow','Impact',sans-serif;font-size:15px;color:var(--canyonL);margin-bottom:5px;">✈ JUNE 1–4 TRIP</div>`;
+  ['✓ Airport: skip walkways. Take all stairs.',
+   '✓ Flight: 16 oz water/hr. Aisle. Stand every 60 min.',
+   '✓ Eat: steakhouse or grocery. Steak + eggs + berries.',
+   '✓ Sleep: 8+ hrs. Bank it before Week 1.',
+   '✓ June 5: HOKA Arahi 8 — start breaking in.',
+   '✓ June 6: Week 1. 6am. Gentry Gym. Let\'s go.',
+  ].forEach(a=>h+=`<div style="font-size:11px;padding:3px 0;border-bottom:1px solid rgba(224,90,26,0.15);">${a}</div>`);
+  h+=`</div>`;
+
+  h+=`<div class="slabel">SCENARIO</div><div class="stabs">`;
+  TRAVEL_SC.forEach(sc=>{
+    const a=S.tsc===sc.id;
+    h+=`<button class="stab" onclick="setTSC('${sc.id}')" style="background:${a?sc.color:'var(--s1)'};border:1px solid ${a?sc.color:'var(--border)'};color:${a?'#000':'var(--muted)'};">
+      ${sc.name}<br><span style="font-weight:400;font-size:7px;">${sc.title}</span></button>`;
+  });
+  h+=`</div>`;
+
+  const sc=TRAVEL_SC.find(s=>s.id===S.tsc);
+  h+=`<div style="padding:9px 12px;background:${sc.color}12;border:1px solid ${sc.color}40;border-radius:7px;margin-bottom:9px;">
+    <div style="font-size:12px;font-weight:700;color:${sc.color};margin-bottom:2px;">${sc.title}</div>
+    <div style="font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:9px;color:var(--muted);">📍 ${sc.indicator}</div>
+  </div>`;
+
+  h+=`<div style="display:flex;gap:5px;margin-bottom:9px;">`;
+  ['sessions','notes','food'].forEach(t=>{
+    const a=S.tsub===t;
+    h+=`<button onclick="setTSub('${t}')" style="flex:1;background:${a?sc.color:'var(--s1)'};border:1px solid ${a?sc.color:'var(--border)'};border-radius:5px;padding:6px;font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:8px;color:${a?'#000':'var(--muted)'};cursor:pointer;text-transform:uppercase;">${t}</button>`;
+  });
+  h+=`</div>`;
+
+  if(S.tsub==='sessions'){
+    sc.sessions.forEach(sess=>{
+      h+=`<div class="card" style="margin-bottom:9px;">
+        <div style="padding:9px 13px;background:${sess.color}12;border-bottom:1px solid ${sess.color}25;">
+          <div style="font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:8px;color:${sess.color};margin-bottom:1px;">${sess.day.toUpperCase()}</div>
+          <div style="font-size:13px;font-weight:700;">${sess.label}</div>
+        </div>
+        <div class="exhdr"><span>EXERCISE</span><span>SETS</span><span>REPS</span><span>NOTE</span></div>`;
+      sess.exercises.forEach(ex=>h+=`<div class="exrow"><span class="exn">${ex.ex}</span><span class="exs" style="color:${sess.color};">${ex.sets}</span><span class="exr">${ex.reps}</span><span class="exnote">${ex.note}</span></div>`);
+      if(sess.cardio)h+=`<div style="padding:7px 13px;background:${C.sage}10;font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:10px;color:${C.sageL};">🏃 ${sess.cardio}</div>`;
+      h+=`</div>`;
+    });
+  }
+  if(S.tsub==='notes'){
+    h+=`<div class="card"><div class="cb">`;
+    sc.notes.forEach(n=>h+=`<div style="display:flex;gap:7px;padding:6px 0;border-bottom:1px solid var(--dim);font-size:12px;"><span style="color:${sc.color};">→</span>${n}</div>`);
+    h+=`</div></div>`;
+    h+=`<div class="card"><div class="cb"><div class="slabel" style="color:var(--skyL);">✈ FLIGHT RULES</div>`;
+    [{r:'16 oz water/hr minimum',d:'Cabin dehydrates — compounds TRT hematocrit risk.'},
+     {r:'No alcohol on flights',d:'One drink = 2 days of recovery lost.'},
+     {r:'Aisle seat — stand every 60 min',d:'DVT risk on TRT with elevated hematocrit.'},
+     {r:'Electrolytes before boarding',d:'LMNT or Redmond Real Salt.'},
+     {r:'Walk the airport always',d:'Skip walkways. Take stairs. Every connection.'},
+    ].forEach(r=>h+=`<div class="rrow2"><div class="rt">${r.r}</div><div class="rd">${r.d}</div></div>`);
+    h+=`</div></div>`;
+  }
+  if(S.tsub==='food'){
+    h+=`<div class="card"><div class="cb"><div class="slabel" style="color:var(--goldL);">🥩 EATING ON THE ROAD</div>`;
+    [{r:'Steakhouses everywhere',d:'Ribeye, butter, no sauce. Any airport, any city.'},
+     {r:'Airport: sit-down over fast food',d:'Most terminals have a steak or salmon option.'},
+     {r:'Grocery store option',d:'Hard boiled eggs, deli beef, canned salmon, berries.'},
+     {r:'Sardines in carry-on',d:'3.75 oz cans pass TSA. Bring 2–3 cans.'},
+     {r:'Client dinner order',d:'"Steak medium rare, no sauce, mixed greens." Done.'},
+     {r:'Fast food emergency',d:'Chipotle: steak, no rice/beans, guac. Burger: no bun.'},
+    ].forEach(r=>h+=`<div class="rrow2"><div class="rt">${r.r}</div><div class="rd">${r.d}</div></div>`);
+    h+=`</div></div>`;
+  }
+  return h;
+}
+
+function rRecovery(){
+  const tabs=[{id:'schedule',l:'Schedule'},{id:'sauna',l:'Sauna/Cold'},{id:'sleep',l:'Sleep'},{id:'blood',l:'Markers'}];
+  let h=`<div style="display:flex;gap:5px;margin-bottom:11px;">`;
+  tabs.forEach(t=>{
+    const a=S.recTab===t.id;
+    h+=`<button onclick="setRT('${t.id}')" style="flex:1;background:${a?'var(--sky)':'var(--s1)'};border:1px solid ${a?'var(--sky)':'var(--border)'};border-radius:5px;padding:6px 2px;font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:8px;color:${a?'#fff':'var(--muted)'};cursor:pointer;">${t.l}</button>`;
+  });
+  h+=`</div>`;
+
+  if(S.recTab==='schedule'){
+    RECOVERY_SCH.forEach(day=>{
+      h+=`<div class="rcday">
+        <div class="rcdh" style="background:${day.color}12;">
+          <span style="font-size:12px;font-weight:700;color:${day.color};">${day.day}</span>
+          <span style="font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:8px;color:var(--muted);">${day.training}</span>
+        </div>`;
+      day.items.forEach(item=>h+=`<div class="rcitem">
+        <div style="font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:7px;color:${day.color};letter-spacing:0.1em;margin-bottom:2px;">${item.lbl.toUpperCase()}</div>
+        <div class="rcp">${item.p}</div>
+        <div class="rcn">${item.n}</div>
+      </div>`);
+      h+=`</div>`;
+    });
+    h+=`<div style="padding:9px 13px;background:rgba(192,48,48,0.1);border:1px solid rgba(192,48,48,0.3);border-radius:7px;font-size:11px;color:var(--redL);">⚠ HEMATOCRIT: 16–20oz electrolytes BEFORE every sauna. 16oz AFTER. Always.</div>`;
+  }
+
+  if(S.recTab==='sauna'){
+    [[`Strength days`,'Sauna 15–20 → Cold 2–3 min → Sauna 10','Sauna FIRST on lift days — preserves anabolic window.'],
+     ['Run days','Cold 2–3 min → Sauna 15–20','Cold first reduces leg inflammation.'],
+     ['Double days (Thu)','Sauna 15 → Cold 2 min','Shorter — system already stressed.'],
+     ['Long run (Sat)','Cold ONLY — 3–5 min','No sauna after long runs.'],
+     ['Race week','Sauna only — no cold','Want legs alive at start line.'],
+    ].forEach(([l,seq,why])=>h+=`<div class="card" style="margin-bottom:7px;"><div class="cb">
+      <div style="font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:8px;color:var(--sky);margin-bottom:3px;">${l.toUpperCase()}</div>
+      <div style="font-size:13px;font-weight:700;margin-bottom:3px;">${seq}</div>
+      <div style="font-size:11px;color:var(--muted);">${why}</div>
+    </div></div>`);
+    h+=`<div style="padding:9px 13px;background:rgba(26,106,184,0.1);border:1px solid rgba(26,106,184,0.3);border-radius:7px;font-size:11px;color:var(--skyL);margin-top:4px;">
+      Sauna post-training elevates GH 2–5×. Cold plunge elevates it independently. You stack both daily. On TRT this is elite-level body recomposition stimulus.
+    </div>`;
+  }
+
+  if(S.recTab==='sleep'){
+    [['8–9 hrs every training night','GH released in deep sleep. Every adaptation converts here.'],
+     ['5:30am wake — same time 7 days','Variable wake = disrupted cortisol = disrupted testosterone.'],
+     ['No screens 60 min pre-bed','Blue light suppresses melatonin. You wake at 5:30.'],
+     ['Room temp 65–68°F','Core temp must drop to initiate deep sleep.'],
+     ['Morning sun within 30 min of waking','Sets melatonin release 14–16 hrs later. Free. 5 minutes.'],
+     ['Magnesium glycinate 400mg pre-bed','Activates GABA. Drops cortisol. Best sleep supplement.'],
+    ].forEach(([r,d])=>h+=`<div class="card" style="margin-bottom:7px;"><div class="cb">
+      <div style="font-size:13px;font-weight:700;margin-bottom:3px;">${r}</div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.6;">${d}</div>
+    </div></div>`);
+  }
+
+  if(S.recTab==='blood'){
+    h+=`<div style="padding:9px 12px;background:rgba(192,48,48,0.1);border:1px solid rgba(192,48,48,0.3);border-radius:7px;margin-bottom:11px;font-size:11px;color:var(--redL);">
+      Given your father at 57 — these markers are cardiac protection. Test every 6 weeks. Upload screenshots to Claude for full analysis.
+    </div>`;
+    BLOOD_MARKERS.forEach(m=>{
+      h+=`<div class="mrow">
+        <div class="mtop"><div style="font-size:12px;font-weight:600;">${m.name}</div>
+          <div class="mright"><div class="mtgt" style="background:rgba(32,160,80,0.15);color:var(--greenL);">${m.target}</div>
+            <div style="font-family:'DM Mono','SF Mono','Menlo','Courier New',monospace,'SF Mono','Menlo','Courier New',monospace;font-size:8px;background:var(--s2);color:var(--muted);padding:2px 6px;border-radius:3px;">${m.freq}</div>
+          </div>
+        </div>
+        <div class="mwhy">${m.why}</div>
+      </div>`;
+    });
+  }
+  return h;
+}
+
+// ─── EVENTS + SAVES ──────────────────────────────────────────────────────────
+function bindAll(){
+  // Complete btn
+  const cb=document.getElementById('cbtn');
+  if(cb)cb.addEventListener('click',()=>{
+    const vd=S.selDay||getTodayTpl();
+    const k=S.week+'-'+vd.day;
+    S.completed[k]=!S.completed[k];
+    sv('completed',S.completed);render();
+  });
+  // Week adj
+  const wm=document.getElementById('wk-m');
+  const wp=document.getElementById('wk-p');
+  if(wm)wm.addEventListener('click',()=>{S.week=Math.max(1,S.week-1);sv('week',S.week);render();});
+  if(wp)wp.addEventListener('click',()=>{S.week=Math.min(36,S.week+1);sv('week',S.week);render();});
+  // Accordions
+  ['wu','cool','b0','b1','b2','b3'].forEach(k=>{
+    const el=document.getElementById('acc-'+k);
+    if(el)el.addEventListener('click',()=>{S.exp[k]=!S.exp[k];render();});
+  });
+  // Save buttons
+  const sr=document.getElementById('save-run');if(sr)sr.addEventListener('click',saveRun);
+  const sg=document.getElementById('save-gym');if(sg)sg.addEventListener('click',saveGym);
+  const sw=document.getElementById('save-wt');if(sw)sw.addEventListener('click',saveWt);
+  const sb=document.getElementById('save-blood');if(sb)sb.addEventListener('click',saveBlood);
+  const sp=document.getElementById('save-photo');if(sp)sp.addEventListener('click',savePhoto);
+}
+
+function flash(){S.saved=true;setTimeout(()=>{S.saved=false;render();},2000);}
+
+function saveRun(){
+  const f=S.rf;
+  f.date=document.getElementById('rf-d')?.value||f.date;
+  f.dist=document.getElementById('rf-dist')?.value||'';
+  f.dur=document.getElementById('rf-dur')?.value||'';
+  f.pace=document.getElementById('rf-pace')?.value||'';
+  f.ahr=document.getElementById('rf-ahr')?.value||'';
+  f.mhr=document.getElementById('rf-mhr')?.value||'';
+  f.inc=document.getElementById('rf-inc')?.value||'';
+  f.stroller=document.getElementById('rf-str')?.checked||false;
+  f.notes=document.getElementById('rf-notes')?.value||'';
+  const e={...f,id:Date.now(),week:S.week};
+  S.runLogs.unshift(e);sv('runLogs',S.runLogs);
+  S.rf={date:td(),dist:'',dur:'',ahr:'',mhr:'',pace:'',inc:'',stroller:false,ankle:'3',effort:'3',notes:''};
+  flash();
+}
+function saveGym(){
+  const f=S.gf;
+  f.date=document.getElementById('gf-d')?.value||f.date;
+  f.session=document.getElementById('gf-sess')?.value||f.session;
+  f.ahr=document.getElementById('gf-ahr')?.value||'';
+  f.mhr=document.getElementById('gf-mhr')?.value||'';
+  f.dur=document.getElementById('gf-dur')?.value||'';
+  f.notes=document.getElementById('gf-notes')?.value||'';
+  const e={...f,id:Date.now(),week:S.week};
+  S.gymLogs.unshift(e);sv('gymLogs',S.gymLogs);
+  S.gf={date:td(),session:'Push + Core',ahr:'',mhr:'',dur:'',energy:'3',notes:''};
+  flash();
+}
+function saveWt(){
+  const f=S.wf;
+  f.date=document.getElementById('wf-d')?.value||f.date;
+  f.weight=document.getElementById('wf-w')?.value||'';
+  f.waist=document.getElementById('wf-ws')?.value||'';
+  f.notes=document.getElementById('wf-notes')?.value||'';
+  if(!f.weight&&!f.waist)return;
+  const e={...f,id:Date.now(),week:S.week};
+  S.weightLogs.unshift(e);
+  S.weightLogs.sort((a,b)=>new Date(a.date)-new Date(b.date));
+  sv('weightLogs',S.weightLogs);
+  S.wf={date:td(),weight:'',waist:'',notes:''};
+  flash();
+}
+function saveBlood(){
+  const date=document.getElementById('bf-d')?.value||td();
+  const e={...S.bf,date,id:Date.now(),week:S.week};
+  S.bloodLogs.unshift(e);sv('bloodLogs',S.bloodLogs);
+  sv('lastBloodwork',date);
+  S.bf={};flash();
+}
+function savePhoto(){
+  const f=S.pf;
+  f.week=document.getElementById('pf-wk')?.value||f.week;
+  f.notes=document.getElementById('pf-notes')?.value||'';
+  if(!f.src)return;
+  const e={...f,id:Date.now()};
+  S.photos.unshift(e);sv('photos',S.photos);
+  S.pf={week:String(S.week),notes:'',src:''};
+  flash();
+}
+function handlePh(event){
+  const file=event.target.files[0];if(!file)return;
+  const r=new FileReader();
+  r.onload=e=>{S.pf.src=e.target.result;render();};
+  r.readAsDataURL(file);
+}
+
+// ─── GLOBAL HANDLERS ─────────────────────────────────────────────────────────
+function sw(s){S.screen=s;S.selDay=null;S.exp={};render();}
+function selDay(dow){S.selDay=WT.find(t=>t.dow===dow)||null;S.exp={};S.screen='today';render();}
+function setLT(t){S.logTab=t;render();}
+function setBSub(t){S.bloodSub=t;render();}
+function setBV(name,val){S.bf[name]=val;}
+function setR(k,v){S.rf[k]=v;render();}
+function setGE(v){S.gf.energy=v;render();}
+function setPT(t){S.ptab=t;render();}
+function setTSC(id){S.tsc=id;S.tsub='sessions';render();}
+function setTSub(t){S.tsub=t;render();}
+function setRT(t){S.recTab=t;render();}
+function triggerPhotoUpload(){var el=document.getElementById("pf-file");if(el)el.click();}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+initStorage();
+S.week=Math.max(1,Math.min(36,ld('week',getWk(new Date()))));
+render();
+showMoto();
+</script>
+</body>
+</html>
